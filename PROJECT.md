@@ -143,7 +143,7 @@ The SDK 57 default template uses a `src/`-rooted layout (not `app/` at repo root
 |---|---|---|
 | 0. Spike (scan path + track fan-out on free units) | ✅ **GO** (2026-08-12) | Live: REST flow works, no native SDK; one scan → Recovery 81 / Acne 77; **16 units/8-concern HD scan**. Hair endpoint deferred to M5 |
 | 1. Scaffold | ✅ **done** (2026-08-12) | Expo SDK 57 app; structure + placeholders; jest-expo (3 tests) + ESLint + Prettier + strict TS; CI workflow (green on push `22479ae`); `expo-doctor` 21/21 |
-| 2. Consent + track picker + encrypted store | ◐ in progress | ✅ privacy doc, consent + enrollment logic (tested), DB interface + in-memory impl + migrations (19 tests). ⏳ onboarding UI, op-sqlite/SQLCipher driver, EAS iOS dev build |
+| 2. Consent + track picker + encrypted store | ◐ in progress | ✅ privacy doc; consent + enrollment logic; DB interface + in-memory + migrations; **onboarding UI (welcome→consent→journeys) wired to first-run gate** (21 tests). ⏳ op-sqlite/SQLCipher driver + EAS iOS dev build |
 | 2. Consent-first onboarding + track selection + encrypted store | ☐ todo | |
 | 3. Core: track registry + skin scan → fan-out to tracks | ☐ todo | heart; use supabase skill |
 | 4. Garden home + per-track dashboards | ☐ todo | |

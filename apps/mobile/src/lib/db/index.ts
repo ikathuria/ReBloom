@@ -13,9 +13,22 @@ export { MIGRATIONS, SCHEMA_VERSION } from './migrations';
 export { createInMemoryDb };
 
 /**
- * Open the app's local store. TODO(M2 dev build): return the encrypted op-sqlite/SQLCipher
+ * Open a fresh local store. TODO(M2 dev build): return the encrypted op-sqlite/SQLCipher
  * implementation on iOS/Android; keep in-memory for tests and web.
  */
 export async function createDb(): Promise<ReBloomDb> {
   return createInMemoryDb();
+}
+
+let dbPromise: Promise<ReBloomDb> | null = null;
+
+/** App-wide singleton store. Use this in app code; `createDb()` is for tests that want isolation. */
+export function getDb(): Promise<ReBloomDb> {
+  if (!dbPromise) dbPromise = createDb();
+  return dbPromise;
+}
+
+/** Test helper: drop the singleton so the next getDb() opens a fresh store. */
+export function __resetDbSingleton(): void {
+  dbPromise = null;
 }
