@@ -5,6 +5,8 @@
 // wired into `createDb()` for native platforms; until then `createDb()` returns the in-memory
 // store so the app and tests run everywhere (including the iOS Simulator).
 
+import { Platform } from 'react-native';
+
 import type { ReBloomDb } from './types';
 import { createInMemoryDb } from './memory';
 
@@ -12,12 +14,22 @@ export * from './types';
 export { MIGRATIONS, SCHEMA_VERSION } from './migrations';
 export { createInMemoryDb };
 
+const inJest = typeof process !== 'undefined' && !!process.env.JEST_WORKER_ID;
+
 /**
- * Open a fresh local store. TODO(M2 dev build): return the encrypted op-sqlite/SQLCipher
- * implementation on iOS/Android; keep in-memory for tests and web.
+ * Open a fresh local store. Uses the encrypted op-sqlite/SQLCipher store on a native dev build;
+ * falls back to the in-memory store for tests, web, and Expo Go (where op-sqlite's native module
+ * is absent) so the app still runs — data just won't persist across restarts there.
  */
 export async function createDb(): Promise<ReBloomDb> {
-  return createInMemoryDb();
+  if (inJest || Platform.OS === 'web') return createInMemoryDb();
+  try {
+    const { createOpSqliteDb } = await import('./opsqlite');
+    return await createOpSqliteDb();
+  } catch (e) {
+    console.warn('[db] encrypted store unavailable — using in-memory (Expo Go?).', e);
+    return createInMemoryDb();
+  }
 }
 
 let dbPromise: Promise<ReBloomDb> | null = null;

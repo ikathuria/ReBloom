@@ -26,7 +26,7 @@ ReBloom is a private, opt-in mobile app that makes invisible physical healing **
 | Camera | expo-camera | bundled w/ SDK 57 | selfie + scalp capture |
 | Charts | victory-native | 41.26.0 | per-track bloom trends; peer deps reanimated + gesture-handler + @shopify/react-native-skia |
 | Server data/cache | @tanstack/react-query | 5.101.4 | scan calls + opt-in sync |
-| Local storage (encrypted) | op-sqlite + SQLCipher, key in expo-secure-store | latest via docs | at-rest encryption; forces EAS dev builds. Fallback: expo-sqlite + field encryption |
+| Local storage (encrypted) | @op-engineering/op-sqlite + SQLCipher; key via expo-crypto → expo-secure-store | op-sqlite 18.1.1 | at-rest DB encryption; requires a dev build (not Expo Go). `"op-sqlite":{"sqlcipher":true}` in package.json; falls back to in-memory in jest/web/Expo Go |
 | Backend | Supabase Edge Functions (Deno) | current | stateless proxies to YouCam (hold key, meter units) |
 | Database | Supabase Postgres | current | opt-in encrypted sync + clinic data; RLS |
 | Client SDK | @supabase/supabase-js | 2.112.3 | auth + DB + function invocation |
@@ -143,7 +143,7 @@ The SDK 57 default template uses a `src/`-rooted layout (not `app/` at repo root
 |---|---|---|
 | 0. Spike (scan path + track fan-out on free units) | ✅ **GO** (2026-08-12) | Live: REST flow works, no native SDK; one scan → Recovery 81 / Acne 77; **16 units/8-concern HD scan**. Hair endpoint deferred to M5 |
 | 1. Scaffold | ✅ **done** (2026-08-12) | Expo SDK 57 app; structure + placeholders; jest-expo (3 tests) + ESLint + Prettier + strict TS; CI workflow (green on push `22479ae`); `expo-doctor` 21/21 |
-| 2. Consent + track picker + encrypted store | ◐ in progress | ✅ privacy doc; consent + enrollment logic; DB interface + in-memory + migrations; **onboarding UI (welcome→consent→journeys) wired to first-run gate** (21 tests). ⏳ op-sqlite/SQLCipher driver + EAS iOS dev build |
+| 2. Consent + track picker + encrypted store | ◐ in progress | ✅ privacy doc; consent + enrollment logic; onboarding UI + first-run gate; **op-sqlite/SQLCipher encrypted driver wired** (21 tests, expo-doctor 21/21). ⏳ runtime-verify on an iOS dev build (blocked on user installing Xcode) |
 | 2. Consent-first onboarding + track selection + encrypted store | ☐ todo | |
 | 3. Core: track registry + skin scan → fan-out to tracks | ☐ todo | heart; use supabase skill |
 | 4. Garden home + per-track dashboards | ☐ todo | |
@@ -155,8 +155,8 @@ The SDK 57 default template uses a `src/`-rooted layout (not `app/` at repo root
 | 10. Deploy (TestFlight / internal) | ☐ todo | |
 | 11. Polish | ☐ todo | |
 
-**In progress now:** Milestones 0 (GO) and 1 (Scaffold) complete. `apps/mobile` runs on Expo SDK 57 with the folder structure, tooling, CI, and a green lint/typecheck/test gate.
-**Next up:** Milestone 2 — consent-first onboarding + "choose your journeys" track picker + encrypted local store (`lib/db`: op-sqlite + SQLCipher; `enrollments` + `track_points` tables). First doc to write: `docs/02-privacy-and-consent.md`.
+**In progress now:** Milestone 2 nearly done — privacy doc, consent + enrollment logic, onboarding UI + first-run gate, and the op-sqlite/SQLCipher encrypted store are all code-complete (21 tests, expo-doctor 21/21). Open item: **runtime-verify the encrypted store on an iOS dev build** (blocked on the full-Xcode install).
+**Next up:** once Xcode is installed → `npx expo prebuild --clean` + `npx expo run:ios`; verify onboarding→garden + encrypted persistence across a restart; then Milestone 3 (scan → analyze → fan-out).
 **Convention note:** env var for the YouCam key is `PERFECTCORP_API_KEY` (per `.env.example`); the local `.env` currently uses `PERFECT_CORP_API` — align these before wiring the Edge Function in M3.
 
 ---
@@ -172,6 +172,7 @@ Append-only. One line per decision that changed direction, with the why.
 - 2026-08-12 — Free tier caps usage below per-scan cost; payments via RevenueCat (Apple/Google require IAP) — monetization + feasibility.
 - 2026-08-12 — **Track concerns separately** → multi-track model with 7 launch tracks, each its own bloom; tracks are config (`TrackDefinition`), so new ones are data not code; one skin scan feeds all enrolled skin tracks (union of concerns) — user request.
 - 2026-08-12 — **Positioning = general "visible healing" tracker** (not recovery-only); drug recovery is one first-class track among peers — bigger market, but competing with crowded skin/acne/hair apps, so the wedge is multi-track + privacy + the underserved recovery track — user decision.
+- 2026-08-12 — Dev environment has **Command-Line-Tools only, no Xcode/CocoaPods/simulator** → cannot build/boot iOS here. User is installing full Xcode; iOS builds via local `expo run:ios`. op-sqlite (native) breaks Expo Go, so `createDb()` falls back to in-memory in Expo Go/jest/web to stay runnable everywhere until the dev build.
 
 ---
 
