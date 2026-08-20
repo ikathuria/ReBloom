@@ -1,0 +1,17 @@
+{
+  "name": "rebloom",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Root workspace shim. Delegates to apps/mobile — no npm workspaces until a 2nd package exists (see PLAN.md).",
+  "scripts": {
+    "dev": "npm --prefix apps/mobile run start",
+    "start": "npm --prefix apps/mobile run start",
+    "ios": "npm --prefix apps/mobile run ios",
+    "android": "npm --prefix apps/mobile run android",
+    "lint": "npm --prefix apps/mobile run lint",
+    "typecheck": "npm --prefix apps/mobile run typecheck",
+    "test": "npm --prefix apps/mobile run test",
+    "format": "npm --prefix apps/mobile run format",
+    "format:check": "npm --prefix apps/mobile run format:check"
+  }
+}
