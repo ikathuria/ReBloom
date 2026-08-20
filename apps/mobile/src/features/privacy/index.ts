@@ -1,2 +1,2 @@
-// privacy feature — see PLAN.md. Populated in a later milestone.
-export {};
+// privacy feature — consent state + (later) data export/delete. See docs/02-privacy-and-consent.md.
+export * from './consent';

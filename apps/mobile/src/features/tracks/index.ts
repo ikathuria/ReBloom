@@ -1,2 +1,2 @@
-// tracks feature — see PLAN.md. Populated in a later milestone.
-export {};
+// tracks feature — enrollment + (later) per-track dashboard. See PLAN.md.
+export * from './enrollment';

@@ -68,7 +68,8 @@ Freemium with the **track count** as the primary gate: **free = 1 track** (pick 
 | Mobile framework | **Expo (React Native)** | expo **~57.0.15** (RN **0.86.2**, React 19.2.3) | Managed RN with EAS free builds; custom native via config plugins + dev builds. *(actual scaffold pins, verified 2026-08-12)* |
 | Language | **TypeScript** | **~6.0.3** (per SDK 57 template) | Type safety across client + Edge Functions |
 | Navigation | **Expo Router** | bundled w/ SDK 57 | File-based routing, deep links |
-| Camera | **expo-camera** | bundled w/ SDK 57 | Selfie + scalp capture |
+| Camera / photo input | **expo-camera** + **expo-image-picker** | bundled w/ SDK 57 | Live selfie/scalp capture **or** pick an existing photo — the photo path makes iOS **Simulator demos** work (no camera in Simulator) |
+| iOS device builds | **EAS dev build** (`eas build --profile development`) | current | Required once native modules land (op-sqlite in M2); run on a physical iPhone with a free Apple ID |
 | Charts | **victory-native** | **41.26.0** | Skia/Reanimated charts for per-track bloom trends |
 | Server data/cache | **@tanstack/react-query** | **5.101.4** | Scan calls + opt-in sync |
 | Local storage (encrypted) | **op-sqlite + SQLCipher** (key in **expo-secure-store**) | latest via docs | At-rest DB encryption; forces EAS dev builds (not Expo Go). *MVP fallback: expo-sqlite + field encryption* |
@@ -224,11 +225,12 @@ Tasks:
 **Goal:** A first-run user understands what's tracked and what leaves the device, consents explicitly, and picks their journey(s). Local encrypted storage is initialized.
 
 Tasks:
-- [ ] `docs/02-privacy-and-consent.md`: what's captured, that the photo is sent transiently to Perfect Corp and **not stored**, that data stays on-device unless sync is opted into, and the "not medical / not detection of substance use" statement — Done when: committed and reviewed against Risks
-- [ ] Onboarding (warm, garden tone): healing framing + per-item consent toggles (camera, transient analysis) + **"choose your journeys"** track picker — Done when: click path onboarding→consent→choose tracks→garden works; declining analysis blocks scanning with a clear explanation
-- [ ] `features/privacy` consent state + `features/tracks` enrollment persisted; app fully usable logged-out — Done when: consent + enrolled tracks survive relaunch (unit tests on both reducers pass)
-- [ ] `lib/db`: op-sqlite + SQLCipher (key in expo-secure-store); migrations for `enrollments` (track_id, cadence, enrolled_at) and `track_points` (track_id, timestamp, per-concern scores JSON, bloom) — Done when: a CRUD round-trip test passes on a fresh encrypted DB
-- [ ] Gate: lint, typecheck, test pass — Done when: all green locally
+- [x] `docs/02-privacy-and-consent.md` — **Done:** collection table, transient-not-stored guarantee, granular consent, "not medical/not detection/not monitoring", and the M9 audit checklist.
+- [ ] Onboarding (warm, garden tone): healing framing + per-item consent toggles (camera **and/or** photo library, transient analysis) + **"choose your journeys"** track picker — Done when: click path onboarding→consent→choose tracks→garden works; declining analysis blocks scanning with a clear explanation *(UI still to build)*
+- [~] `features/privacy` consent state + `features/tracks` enrollment — **Logic + tests done** (`consent.ts`, `enrollment.ts`; reducers, `canScan`/`scanBlockReason`, skin/hair fan-out split). Relaunch persistence rides the real op-sqlite DB (below).
+- [~] `lib/db`: op-sqlite + SQLCipher — **Interface + in-memory impl + migrations + CRUD round-trip tests done** (`types.ts`, `memory.ts`, `migrations.ts`; `createDb()` returns in-memory for now). **Remaining:** the encrypted op-sqlite/SQLCipher driver (`opsqlite.ts`) + wire into `createDb()` — lands with the dev build.
+- [ ] **iOS dev build on device (early demo checkpoint):** add EAS config + the op-sqlite/expo-secure-store config plugins, `eas build --profile development` (iOS), install on the iOS Simulator and/or a physical iPhone — Done when: onboarding→choose-tracks→garden runs on an iOS build (Expo Go no longer applies once op-sqlite lands) *(needs Expo/EAS login)*
+- [ ] Gate: lint, typecheck, test pass — Done when: all green locally *(currently green: 19 tests)*
 
 ### Milestone 3: Core — track registry + skin scan → fan-out to tracks
 **Goal:** The heart: the 6 skin tracks exist as config, and one skin scan updates every enrolled skin track's bloom. *(Use the `supabase` skill for the Edge Function.)*
@@ -237,7 +239,7 @@ Tasks:
 - [ ] `lib/tracks` registry: the 6 skin `TrackDefinition`s (concerns per M0, cadence, copy) + `BloomScoring` engine mapping a track's concern scores → 0–100 bloom — Done when: named unit tests compute expected blooms for each track from sample concern inputs (improving/flat/declining)
 - [ ] Productionize `analyze-skin` Edge Function: accepts the union of enrolled concerns, input validation, unit metering + logging, error handling, **no image persistence**, rate limiting — Done when: a fetch returns scored shape, 400 on malformed body; a test asserts no image write
 - [ ] `lib/analysis/AnalysisProvider` + `PerfectCorpProvider.analyzeSkin(concerns)` — Done when: a unit test maps API fields → domain `SkinScores` (no vendor types leak upward)
-- [ ] `features/scan` flow: capture → compute union of enrolled skin-track concerns → provider → **fan out** to write one `track_point` per enrolled skin track — Done when: on device, one scan with 2+ enrolled skin tracks persists a point for each; a component test drives capture→fan-out with mocks
+- [ ] `features/scan` flow: **capture via live camera (expo-camera) or pick an existing photo (expo-image-picker)** → compute union of enrolled skin-track concerns → provider → **fan out** to write one `track_point` per enrolled skin track — Done when: on device, one scan (camera or library) with 2+ enrolled skin tracks persists a point for each; a component test drives capture→fan-out with mocks. *(The photo-library path keeps the flow demoable in the iOS Simulator.)*
 - [ ] Gate: lint, typecheck, test pass — Done when: all green locally
 
 ### Milestone 4: Garden home + per-track bloom dashboards
@@ -347,4 +349,5 @@ claude "Read PLAN.md and PROJECT.md. Without building anything new, test everyth
 - **2026-08-12** — Free tier caps usage below per-scan cost; payments via **RevenueCat** (Apple/Google require IAP). *(monetization + feasibility)*
 - **2026-08-12** — Framing centers **health/healing trend**, never attractiveness, never detection/diagnosis. *(community counter-signal + ethics)*
 - **2026-08-12** — **Track them separately.** Reworked into a **multi-track model**: 7 launch tracks (Recovery Healing, Acne Care, Hair Regrowth, Redness & Sensitivity, Hydration, Dark Spots & Even Tone, Under-eye & Dark Circles), each its own bloom. Tracks are **config (`TrackDefinition`)**, so new ones are data, not code. **One skin scan feeds all enrolled skin tracks** (union of concerns) → cost scales with scans, not tracks. *(user request)*
+- **2026-08-12** — **Demoability on iOS:** scan supports **photo-library pick (expo-image-picker)** in addition to live camera, so the flow is demoable in the iOS Simulator (which has no camera); added an **early EAS iOS dev-build checkpoint in M2** (op-sqlite is native → Expo Go no longer applies) so ReBloom is installable on a real iPhone well before M10. *(user request)*
 - **2026-08-12** — **Positioning = general "visible healing" tracker** (not recovery-only); drug recovery is a first-class track among peers — bigger market, but now competing with crowded skin/acne/hair apps, so the wedge is multi-track + privacy + the underserved recovery track, not novelty. *(user decision)*
