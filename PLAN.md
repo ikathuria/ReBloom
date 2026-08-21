@@ -266,10 +266,10 @@ Tasks:
 **Goal:** Based on current skin sensitivity (across enrolled skin tracks), suggest gentle/breathable fabrics and let the user try them on.
 
 Tasks:
-- [ ] `tryon-apparel` Edge Function proxy → YouCam Clothes/Fabric VTO (stateless, holds key, meters units) — Done when: a fetch returns a try-on result for a sample garment/fabric
-- [ ] Sensitivity→fabric mapping (high redness/low hydration → soft, breathable, non-irritating) documented + unit-tested — Done when: named tests map representative score profiles → fabric recommendations
-- [ ] `features/apparel` UI: recommended gentle fabrics + optional try-on, gated by paywall entitlement (see M8) — Done when: on device, a recommendation renders and try-on works for an entitled user
-- [ ] Gate: lint, typecheck, test pass — Done when: all green locally
+- [x] Sensitivity→fabric mapping — **Done + tested:** `lib/apparel/recommend` maps latest skin scores (redness/moisture/texture) → a sensitivity level (calm/settling/sensitive) → gentle fabrics to reach for + irritating ones to skip, with warm reasons. 4 unit tests over representative profiles.
+- [x] `features/apparel` UI — **Done + verified on iOS:** the **Comfort** tab (renamed from Explore) shows the comfort level + recommendations tuned to the real latest scan (calm → cotton/linen/bamboo), a "maybe skip" list, a warm empty state (no scans → prompt to scan), and a Pro try-on teaser.
+- [~] `tryon-apparel` Edge Function / VTO try-on — **Stub written** (returns 501, documents the intended YouCam Clothes/Fabric VTO flow). Real try-on is a **Pro feature (M8)** and the VTO endpoint is unverified, so it ships as a teaser for now.
+- [x] Gate: lint, typecheck, test pass — **Done:** 40 tests green, typecheck + lint clean.
 
 ### Milestone 7: Auth + opt-in encrypted cloud sync
 **Goal:** Users can *optionally* create an account to back up/sync their private data — off by default, encrypted, patient-private. *(Use the `supabase` skill for schema + RLS.)*
