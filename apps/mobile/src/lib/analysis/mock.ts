@@ -18,5 +18,9 @@ export function createMockProvider(seed = Date.now()): AnalysisProvider {
       for (const c of concerns) scores[c] = 60 + Math.round(rand() * 35);
       return scores;
     },
+    async analyzeHair(_imageBase64) {
+      await new Promise((r) => setTimeout(r, 900));
+      return { grade: 2 + Math.round(rand() * 2) }; // 2..4, healthy-leaning
+    },
   };
 }

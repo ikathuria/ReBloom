@@ -1,9 +1,9 @@
 import { getSupabase } from '@/lib/supabase/client';
-import type { AnalysisProvider, SkinScores } from './types';
+import type { AnalysisProvider, HairScores, SkinScores } from './types';
 
 /**
- * Real provider — sends the image + concerns to the analyze-skin Edge Function, which proxies
- * Perfect Corp's YouCam Skin Analysis server-side (key never on the client) and returns scores.
+ * Real provider — sends the image to an Edge Function that proxies Perfect Corp's YouCam APIs
+ * server-side (key never on the client) and returns scores.
  */
 export function createPerfectCorpProvider(): AnalysisProvider {
   return {
@@ -15,6 +15,15 @@ export function createPerfectCorpProvider(): AnalysisProvider {
       const scores = (data as { scores?: SkinScores } | null)?.scores;
       if (!scores) throw new Error('analyze-skin returned no scores');
       return scores;
+    },
+    async analyzeHair(imageBase64) {
+      const { data, error } = await getSupabase().functions.invoke('analyze-hair', {
+        body: { imageBase64, contentType: 'image/jpeg' },
+      });
+      if (error) throw error;
+      const grade = (data as { grade?: number } | null)?.grade;
+      if (typeof grade !== 'number') throw new Error('analyze-hair returned no grade');
+      return { grade } as HairScores;
     },
   };
 }

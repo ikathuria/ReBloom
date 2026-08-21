@@ -21,6 +21,8 @@ export default function TrackDetailScreen() {
 
   if (!trackId) return <ThemedView style={styles.fill} />;
   const meta = TRACKS_META[trackId];
+  const isHair = meta.kind === 'hair';
+  const scanRoute = isHair ? '/scan-hair' : '/scan';
   const latest = points && points.length ? points[points.length - 1] : null;
 
   return (
@@ -62,8 +64,14 @@ export default function TrackDetailScreen() {
               </Section>
 
               <ThemedText type="small" themeColor="textSecondary" style={styles.disclaimer}>
-                A gentle trend to encourage you — not medical advice, not a diagnosis.
+                {isHair
+                  ? 'A coarse month-to-month trend — not a follicle count, not a diagnosis.'
+                  : 'A gentle trend to encourage you — not medical advice, not a diagnosis.'}
               </ThemedText>
+
+              {isHair && (
+                <PrimaryButton testID="track-hair-rescan" label="Take a hair scan" onPress={() => router.push('/scan-hair')} />
+              )}
             </>
           ) : (
             <View style={styles.empty}>
@@ -72,7 +80,7 @@ export default function TrackDetailScreen() {
               <ThemedText type="default" themeColor="textSecondary" style={styles.center}>
                 Take your first scan and this journey will begin to grow.
               </ThemedText>
-              <PrimaryButton testID="track-first-scan" label="Take a scan" onPress={() => router.replace('/scan')} />
+              <PrimaryButton testID="track-first-scan" label="Take a scan" onPress={() => router.replace(scanRoute)} />
             </View>
           )}
         </ScrollView>

@@ -14,3 +14,12 @@ export function getAnalysisProvider(): AnalysisProvider {
   if (!provider) provider = isSupabaseConfigured ? createPerfectCorpProvider() : createMockProvider();
   return provider;
 }
+
+// Hair analysis stays on the mock until the YouCam Hair Density endpoint is confirmed in the
+// sandbox (the public reference doesn't list it yet — see supabase/functions/analyze-hair).
+// Flip to `true` once `analyze-hair` is verified end-to-end, and hair goes real with no other change.
+const HAIR_ANALYSIS_REAL = false;
+
+export function getHairAnalyzer(): AnalysisProvider {
+  return HAIR_ANALYSIS_REAL && isSupabaseConfigured ? getAnalysisProvider() : createMockProvider();
+}

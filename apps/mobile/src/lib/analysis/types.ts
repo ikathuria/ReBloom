@@ -6,6 +6,11 @@ import type { ConcernScores } from '@/lib/tracks/scoring';
 
 export type SkinScores = ConcernScores;
 
+/** YouCam AI Hair Density Detection result — a coarse 4-grade classification (1..4). */
+export interface HairScores {
+  grade: number;
+}
+
 export interface AnalysisProvider {
   /**
    * Analyze a base64-encoded skin photo for the given YouCam concern keys → per-concern
@@ -13,4 +18,7 @@ export interface AnalysisProvider {
    * analyze-skin Edge Function; the mock returns plausible scores for local dev and demos.
    */
   analyzeSkin(imageBase64: string, concerns: string[]): Promise<SkinScores>;
+
+  /** Analyze a base64-encoded scalp/hairline photo → a 4-grade hair-density result. */
+  analyzeHair(imageBase64: string): Promise<HairScores>;
 }

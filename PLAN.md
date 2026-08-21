@@ -257,10 +257,10 @@ Tasks:
 **Goal:** The hair track joins the garden with its own scalp capture and slower, honest signal. *(Deferrable to a fast-follow — it reuses the M3 engine.)*
 
 Tasks:
-- [ ] `analyze-hair` Edge Function → YouCam AI Hair Density Detection (stateless, holds key, meters units, no image persistence) — Done when: a fetch with a scalp photo returns `{ densityGrade, unitsUsed }`, 400 on malformed
-- [ ] `PerfectCorpProvider.analyzeHair()` + the `hair-regrowth` `TrackDefinition` (monthly cadence, coarse-grade bloom tuned to ignore single-grade noise) — Done when: unit tests map response → `HairScores` and assert stable month-over-month bloom
-- [ ] `features/hair` scalp capture-guidance overlay (consistent part/angle/lighting) + monthly cadence prompt + "coarse trend, not follicle count, not diagnosis" disclaimer — Done when: the hair capture screen shows the guide + disclaimer; a test covers the cadence gate; the hair bloom appears in the garden
-- [ ] Gate: lint, typecheck, test pass — Done when: all green locally
+- [~] `analyze-hair` Edge Function → YouCam AI Hair Density Detection (stateless, key server-side, no image persistence, returns `{ grade }`) — **Written**, same file→task→poll pattern as analyze-skin. ⚠️ **The hair task endpoint/action/response fields are best-guesses** (the Hair & Beard suite isn't in the public reference yet) — flagged in the function + gated off client-side (`HAIR_ANALYSIS_REAL = false`) until confirmed in the sandbox.
+- [x] `analyzeHair()` on the provider + `hair-regrowth` bloom — **Done + tested:** `hairBloom` maps the coarse 1–4 grade to a stable, encouraging bloom (45/62/78/92, never near-zero); mock + real provider both implement `analyzeHair`; `getHairAnalyzer()` is the one-flag switch to go real.
+- [x] `features/hair` scalp capture + guidance + monthly framing + "coarse trend, not follicle count, not diagnosis" disclaimer + hair bloom in the garden — **Done + verified on iOS:** enroll Hair Regrowth → detail → (modality-aware) scalp scan → 🌺 92 "Full bloom" → garden shows it. *(Monthly cadence is guidance copy for now; a hard cadence cap is part of M8's server-side gating.)*
+- [x] Gate: lint, typecheck, test pass — **Done:** 36 tests green (incl. `hairBloom` + `runHairScan`), typecheck + lint clean.
 
 ### Milestone 6: Apparel suggestion module (YouCam VTO)
 **Goal:** Based on current skin sensitivity (across enrolled skin tracks), suggest gentle/breathable fabrics and let the user try them on.

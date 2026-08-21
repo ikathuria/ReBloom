@@ -16,6 +16,9 @@ const fixedProvider: AnalysisProvider = {
       hd_pore: 61,
     };
   },
+  async analyzeHair() {
+    return { grade: 3 };
+  },
 };
 
 async function seedEnrollments(db: ReturnType<typeof createInMemoryDb>, ids: string[]) {
