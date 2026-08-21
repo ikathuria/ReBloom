@@ -144,7 +144,7 @@ The SDK 57 default template uses a `src/`-rooted layout (not `app/` at repo root
 | 0. Spike (scan path + track fan-out on free units) | ✅ **GO** (2026-08-12) | Live: REST flow works, no native SDK; one scan → Recovery 81 / Acne 77; **16 units/8-concern HD scan**. Hair endpoint deferred to M5 |
 | 1. Scaffold | ✅ **done** (2026-08-12) | Expo SDK 57 app; structure + placeholders; jest-expo (3 tests) + ESLint + Prettier + strict TS; CI workflow (green on push `22479ae`); `expo-doctor` 21/21 |
 | 2. Consent + track picker + encrypted store | ✅ **done** (verified on iOS) | Full-screen onboarding→consent→journeys→garden + SQLCipher persistence across a cold relaunch, driven on iPhone 17 Pro (iOS 26.5). 22 tests, expo-doctor 21/21 |
-| 3. Core: track registry + skin scan → fan-out to tracks | ◐ in progress | heart; use supabase skill for the Edge Function |
+| 3. Core: track registry + skin scan → fan-out to tracks | ◐ in progress | ✅ concern registry + bloom-scoring engine; scan UI (camera/photo-library) → **mock** analyze → fan-out → encrypted track_points, **verified on iOS** (one photo → Recovery 79/Acne 75). ⏳ real `analyze-skin` Edge Function (needs Supabase) |
 | 4. Garden home + per-track dashboards | ☐ todo | |
 | 5. Hair Regrowth track (scalp capture) | ☐ todo | reuses M3 engine; **deferrable to fast-follow** |
 | 6. Apparel suggestion module (VTO) | ☐ todo | |
