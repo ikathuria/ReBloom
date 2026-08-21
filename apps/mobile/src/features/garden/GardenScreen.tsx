@@ -26,6 +26,14 @@ export default function GardenScreen() {
     <ThemedView style={styles.fill}>
       <SafeAreaView style={styles.fill} edges={['top']}>
         <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
+          <Pressable
+            testID="garden-account"
+            onPress={() => router.push('/account')}
+            accessibilityRole="button"
+            style={styles.accountLink}
+          >
+            <ThemedText style={[styles.accountText, { color: BLOOM }]}>Account</ThemedText>
+          </Pressable>
           <ThemedText type="title">Your garden</ThemedText>
           <ThemedText type="default" themeColor="textSecondary" style={styles.subtitle}>
             Each journey grows as you heal. Take a scan to tend it.
@@ -76,6 +84,8 @@ function GardenCard({ entry }: { entry: GardenEntry }) {
 const styles = StyleSheet.create({
   fill: { flex: 1 },
   scroll: { paddingHorizontal: Spacing.four, paddingTop: Spacing.three, gap: Spacing.two, paddingBottom: Spacing.four },
+  accountLink: { alignSelf: 'flex-end', paddingVertical: Spacing.one },
+  accountText: { fontSize: 15, fontWeight: '700' },
   subtitle: { lineHeight: 22, marginBottom: Spacing.two },
   grid: { flexDirection: 'row', flexWrap: 'wrap', gap: Spacing.three, justifyContent: 'space-between' },
   card: {

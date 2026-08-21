@@ -98,10 +98,19 @@ export async function createOpSqliteDb(): Promise<ReBloomDb> {
       return r ? mapPoint(r) : null;
     },
 
+    async getFlag(key) {
+      const r = rowsOf(await db.execute('SELECT value FROM flags WHERE key = ?', [key]))[0];
+      return r ? str(r.value) : null;
+    },
+    async setFlag(key, value) {
+      await db.execute('INSERT OR REPLACE INTO flags (key, value) VALUES (?, ?)', [key, value]);
+    },
+
     async clearAll() {
       await db.execute('DELETE FROM track_points');
       await db.execute('DELETE FROM enrollments');
       await db.execute('DELETE FROM consent');
+      await db.execute('DELETE FROM flags');
     },
     async close() {
       db.close();

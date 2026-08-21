@@ -25,4 +25,8 @@ export const MIGRATIONS: readonly string[] = [
    );`,
   `CREATE INDEX IF NOT EXISTS idx_track_points_track_time
      ON track_points (track_id, captured_at);`,
+  `CREATE TABLE IF NOT EXISTS flags (
+     key    TEXT PRIMARY KEY,
+     value  TEXT NOT NULL
+   );`,
 ];

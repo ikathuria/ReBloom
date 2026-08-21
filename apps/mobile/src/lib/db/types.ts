@@ -38,6 +38,10 @@ export interface ReBloomDb {
   listTrackPoints(trackId: TrackId): Promise<TrackPoint[]>; // ascending by capturedAt
   latestTrackPoint(trackId: TrackId): Promise<TrackPoint | null>;
 
+  // simple key/value flags (e.g. cloud-sync opt-in)
+  getFlag(key: string): Promise<string | null>;
+  setFlag(key: string, value: string): Promise<void>;
+
   /** Wipe everything (used by privacy "delete all data", M9). */
   clearAll(): Promise<void>;
   close(): Promise<void>;

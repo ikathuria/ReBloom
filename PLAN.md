@@ -275,10 +275,11 @@ Tasks:
 **Goal:** Users can *optionally* create an account to back up/sync their private data — off by default, encrypted, patient-private. *(Use the `supabase` skill for schema + RLS.)*
 
 Tasks:
-- [ ] Supabase Auth: email + Sign in with Apple; app remains fully functional logged-out — Done when: sign-up/login works and skipping auth still allows local scanning
-- [ ] Migrations + RLS so a row is readable/writable **only** by its owner — Done when: an RLS test proves user B cannot read user A's rows
-- [ ] Opt-in sync in `lib/supabase`: encrypted upload of enrollments + track points (not raw images) with explicit toggle + disclosure — Done when: enabling sync uploads existing local data; disabling stops it; a test covers the opt-in gate
-- [ ] Gate: lint, typecheck, test pass — Done when: all green locally
+- [x] Supabase Auth (email) + app works logged-out — **Done + verified on iOS:** signed up demo@rebloom.app (real `auth.users` row), session persisted in the **Keychain** (chunked expo-secure-store adapter, no rebuild); the app is fully usable without an account. *(Sign in with Apple deferred — needs Apple entitlements + a dev build; add before store submit.)*
+- [x] Migrations + RLS, owner-only — **Done + verified:** `enrollments` + `track_points` cloud tables, RLS on, 4 owner-only policies each (`TO authenticated`, `(select auth.uid()) = user_id`, `WITH CHECK`). **RLS test passed: owner sees 5 rows, a different user sees 0.**
+- [x] Opt-in sync in `lib/supabase` — **Done + verified:** `pushToCloud` uploads enrollments + track points (never images), gated on an explicit toggle **and** a session; unit test covers the not-signed-in gate. Live: toggling sync on pushed 4 enrollments + 5 points to the user's cloud rows.
+- [x] Gate: lint, typecheck, test pass — **Done:** 43 tests green, typecheck + lint clean.
+- Note: the backend still runs on **local Supabase** — deploying to a cloud project (`supabase link` + `secrets set` + `functions deploy` + `db push`) happens before store submit (M10).
 
 ### Milestone 8: Monetization (RevenueCat freemium, track- and usage-gated)
 **Goal:** Free = 1 track at capped cadence; pro = all tracks + full cadence + apparel — in StoreKit/Play test mode.

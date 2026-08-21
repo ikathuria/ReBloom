@@ -10,6 +10,7 @@ export function createInMemoryDb(): ReBloomDb {
   let consent: ConsentState | null = null;
   const enrollments = new Map<TrackId, EnrollmentRecord>();
   const points: TrackPoint[] = [];
+  const flags = new Map<string, string>();
 
   const byTimeAsc = (a: TrackPoint, b: TrackPoint) => a.capturedAt.localeCompare(b.capturedAt);
 
@@ -42,10 +43,18 @@ export function createInMemoryDb(): ReBloomDb {
       return ofTrack.length ? ofTrack[ofTrack.length - 1] : null;
     },
 
+    async getFlag(key) {
+      return flags.get(key) ?? null;
+    },
+    async setFlag(key, value) {
+      flags.set(key, value);
+    },
+
     async clearAll() {
       consent = null;
       enrollments.clear();
       points.length = 0;
+      flags.clear();
     },
     async close() {
       /* no-op for in-memory */
