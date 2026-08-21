@@ -9,10 +9,13 @@ export interface PrimaryButtonProps {
   onPress: () => void;
   disabled?: boolean;
   testID?: string;
+  /** 'primary' = filled bloom CTA (default); 'secondary' = bloom-outlined. */
+  variant?: 'primary' | 'secondary';
 }
 
-/** Bloom-colored primary CTA. */
-export function PrimaryButton({ label, onPress, disabled = false, testID }: PrimaryButtonProps) {
+/** Bloom-colored CTA. */
+export function PrimaryButton({ label, onPress, disabled = false, testID, variant = 'primary' }: PrimaryButtonProps) {
+  const secondary = variant === 'secondary';
   return (
     <Pressable
       testID={testID}
@@ -20,9 +23,9 @@ export function PrimaryButton({ label, onPress, disabled = false, testID }: Prim
       disabled={disabled}
       accessibilityRole="button"
       accessibilityState={{ disabled }}
-      style={[styles.button, disabled && styles.disabled]}
+      style={[styles.button, secondary && styles.secondary, disabled && styles.disabled]}
     >
-      <ThemedText style={styles.label}>{label}</ThemedText>
+      <ThemedText style={[styles.label, secondary && styles.secondaryLabel]}>{label}</ThemedText>
     </Pressable>
   );
 }
@@ -35,6 +38,8 @@ const styles = StyleSheet.create({
     borderRadius: Spacing.four,
     alignItems: 'center',
   },
+  secondary: { backgroundColor: 'transparent', borderWidth: 2, borderColor: BLOOM },
   disabled: { opacity: 0.4 },
   label: { color: '#ffffff', fontSize: 16, fontWeight: '700' },
+  secondaryLabel: { color: BLOOM },
 });

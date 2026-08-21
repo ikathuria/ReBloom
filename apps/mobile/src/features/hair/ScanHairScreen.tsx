@@ -14,31 +14,42 @@ import { BloomVisual } from '@/features/garden/BloomVisual';
 import { canScan, scanBlockReason } from '@/features/privacy/consent';
 import { getHairAnalyzer } from '@/lib/analysis';
 import { getDb } from '@/lib/db';
+import { scanGate, useTier, type ScanGate } from '@/lib/purchases';
 import { runHairScan, type HairScanResult } from './runHairScan';
 
-type State = 'checking' | 'blocked' | 'idle' | 'analyzing' | 'done' | 'error';
+const HAIR_TRACK = 'hair-regrowth' as const;
+
+type State = 'checking' | 'blocked' | 'capped' | 'idle' | 'analyzing' | 'done' | 'error';
 
 export default function ScanHairScreen() {
+  const { tier } = useTier();
   const [state, setState] = useState<State>('checking');
   const [blockReason, setBlockReason] = useState<string | null>(null);
+  const [gate, setGate] = useState<ScanGate | null>(null);
   const [result, setResult] = useState<HairScanResult | null>(null);
 
   useEffect(() => {
     let alive = true;
-    getDb()
-      .then((db) => db.getConsent())
-      .then((consent) => {
-        if (!alive) return;
-        if (consent && canScan(consent)) setState('idle');
-        else {
-          setBlockReason(scanBlockReason(consent ?? { capture: false, analysis: false, updatedAt: null }));
-          setState('blocked');
-        }
-      });
+    (async () => {
+      const db = await getDb();
+      const consent = await db.getConsent();
+      if (!alive) return;
+      if (!(consent && canScan(consent))) {
+        setBlockReason(scanBlockReason(consent ?? { capture: false, analysis: false, updatedAt: null }));
+        setState('blocked');
+        return;
+      }
+      // Hair is monthly for everyone (its natural cadence). Cap rescans within the window.
+      const last = await db.latestTrackPoint(HAIR_TRACK);
+      if (!alive) return;
+      const g = scanGate(tier, [HAIR_TRACK], last?.capturedAt ?? null);
+      setGate(g);
+      setState(g.allowed ? 'idle' : 'capped');
+    })();
     return () => {
       alive = false;
     };
-  }, []);
+  }, [tier]);
 
   async function capture(source: 'camera' | 'library') {
     const opts: ImagePicker.ImagePickerOptions = { quality: 0.6, base64: true, mediaTypes: ['images'] };
@@ -72,6 +83,18 @@ export default function ScanHairScreen() {
               <ThemedText style={styles.emoji}>🌿</ThemedText>
               <ThemedText type="subtitle" style={styles.center}>Scanning is off</ThemedText>
               <ThemedText type="default" themeColor="textSecondary" style={styles.center}>{blockReason}</ThemedText>
+            </View>
+          )}
+
+          {state === 'capped' && (
+            <View style={styles.centered}>
+              <ThemedText style={styles.emoji}>🌙</ThemedText>
+              <ThemedText type="subtitle" style={styles.center}>Give it a month</ThemedText>
+              <ThemedText type="default" themeColor="textSecondary" style={styles.center}>
+                Hair changes slowly, so ReBloom checks it monthly. Your next hair scan opens in{' '}
+                {gate?.waitDays ?? 'a few'} day{gate?.waitDays === 1 ? '' : 's'}.
+              </ThemedText>
+              <PrimaryButton testID="hair-capped-back" label="Back to garden" onPress={() => router.back()} />
             </View>
           )}
 

@@ -9,8 +9,12 @@
 // be confirmed in the sandbox console before flipping HAIR_ANALYSIS_REAL on the client. Until
 // then the app uses the mock hair analyzer (see lib/analysis/getHairAnalyzer).
 //
-// Request  (POST JSON): { imageBase64: string, contentType?: string }
+// Request  (POST JSON): { imageBase64: string, contentType?: string,
+//                         cadence?: { minIntervalDays: number, lastScanAt: string|null, tier?: 'free'|'pro' } }
 // Response (JSON):      { grade: number }   // 1..4
+//   429 { error, code: 'cadence_exceeded', upgrade, waitDays } when a passed cadence hint is over-cap.
+
+import { checkCadence, type CadenceHint } from "../_shared/cadence.ts";
 
 const BASE = "https://yce-api-01.makeupar.com";
 const API_KEY = Deno.env.get("PERFECTCORP_API_KEY");
@@ -40,14 +44,20 @@ Deno.serve(async (req) => {
   if (req.method !== "POST") return json({ error: "POST only" }, 405);
   if (!API_KEY) return json({ error: "PERFECTCORP_API_KEY not configured" }, 500);
 
-  let body: { imageBase64?: string; contentType?: string };
+  let body: { imageBase64?: string; contentType?: string; cadence?: CadenceHint };
   try {
     body = await req.json();
   } catch {
     return json({ error: "invalid JSON body" }, 400);
   }
-  const { imageBase64, contentType = "image/jpeg" } = body;
+  const { imageBase64, contentType = "image/jpeg", cadence } = body;
   if (!imageBase64) return json({ error: "imageBase64 required" }, 400);
+
+  // Guardrail: refuse an over-cadence scan (protects paid API units). See _shared/cadence.ts.
+  const cap = checkCadence(cadence);
+  if (cap.overCap) {
+    return json({ error: "scan not due yet", code: "cadence_exceeded", upgrade: cadence?.tier !== "pro", waitDays: cap.waitDays }, 429);
+  }
 
   const auth = { Authorization: `Bearer ${API_KEY}` };
   const bytes = base64ToBytes(imageBase64);

@@ -6,12 +6,16 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Spacing } from '@/constants/theme';
+import { useTheme } from '@/hooks/use-theme';
 import { BLOOM } from '@/features/onboarding/copy';
 import { SelectRow } from '@/features/onboarding/SelectRow';
 import { getDb } from '@/lib/db';
+import { canEnrollAnother, useTier } from '@/lib/purchases';
 import { TRACKS_META, TRACK_IDS, defaultCadence, type TrackId } from '@/lib/tracks';
 
 export default function AddJourneyScreen() {
+  const theme = useTheme();
+  const { tier } = useTier();
   const [enrolled, setEnrolled] = useState<Set<TrackId>>(new Set());
 
   useEffect(() => {
@@ -24,7 +28,14 @@ export default function AddJourneyScreen() {
     };
   }, []);
 
+  const locked = !canEnrollAnother(tier, enrolled.size);
+
   async function add(id: TrackId) {
+    // Free follows one journey — sending a second one to the paywall instead of enrolling.
+    if (locked) {
+      router.push('/paywall');
+      return;
+    }
     const db = await getDb();
     await db.upsertEnrollment({ trackId: id, cadence: defaultCadence(id), enrolledAt: new Date().toISOString() });
     setEnrolled((prev) => new Set(prev).add(id));
@@ -41,16 +52,32 @@ export default function AddJourneyScreen() {
           <ThemedText type="default" themeColor="textSecondary" style={styles.subtitle}>
             Follow another kind of healing. Tap to add it to your garden.
           </ThemedText>
+
+          {locked && (
+            <Pressable
+              testID="add-pro-banner"
+              onPress={() => router.push('/paywall')}
+              accessibilityRole="button"
+              style={[styles.banner, { backgroundColor: theme.backgroundElement }]}
+            >
+              <ThemedText type="smallBold">🌸 Follow more with ReBloom Pro</ThemedText>
+              <ThemedText type="small" themeColor="textSecondary" style={styles.bannerBody}>
+                Free tends one journey. Unlock every journey and full scan rhythm — tap to see Pro.
+              </ThemedText>
+            </Pressable>
+          )}
+
           <View style={styles.rows}>
             {TRACK_IDS.map((id) => {
               const meta = TRACKS_META[id];
               const isEnrolled = enrolled.has(id);
+              const showLock = locked && !isEnrolled;
               return (
                 <SelectRow
                   key={id}
                   testID={`add-${id}`}
                   title={meta.sensitive ? `${meta.name}  ·  private` : meta.name}
-                  help={isEnrolled ? 'Already in your garden' : meta.blurb}
+                  help={isEnrolled ? 'Already in your garden' : showLock ? 'ReBloom Pro' : meta.blurb}
                   selected={isEnrolled}
                   onPress={() => !isEnrolled && add(id)}
                 />
@@ -69,5 +96,7 @@ const styles = StyleSheet.create({
   backText: { fontSize: 16, fontWeight: '700' },
   scroll: { paddingHorizontal: Spacing.four, paddingBottom: Spacing.five, gap: Spacing.three },
   subtitle: { lineHeight: 22 },
+  banner: { padding: Spacing.three, borderRadius: Spacing.three, gap: 2 },
+  bannerBody: { lineHeight: 18 },
   rows: { gap: Spacing.two },
 });

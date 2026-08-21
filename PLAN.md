@@ -285,11 +285,11 @@ Tasks:
 **Goal:** Free = 1 track at capped cadence; pro = all tracks + full cadence + apparel — in StoreKit/Play test mode.
 
 Tasks:
-- [ ] RevenueCat configured (`react-native-purchases` 10.6.0) with entitlements (`free`, `pro`) + test products — Done when: the paywall shows products in a sandbox purchase
-- [ ] Enrollment gating: free accounts can enroll in exactly 1 track; pro unlocks all — Done when: a free user is blocked from a 2nd track with an upgrade prompt; pro can enroll in many (test with mocked entitlement)
-- [ ] Server-side cadence gating in `analyze-skin`/`analyze-hair`: enforce free cadence caps vs. pro (weekly skin / monthly hair); reject over-cap with an upgrade signal — Done when: a free account is blocked past the cap and pro passes
-- [ ] Paywall UI + entitlement checks on 2nd-track / full-cadence / apparel — Done when: gated actions prompt upgrade for free and unlock for pro in sandbox
-- [ ] Gate: lint, typecheck, test pass — Done when: all green locally
+- [~] RevenueCat configured (`react-native-purchases` 10.6.0) with entitlements (`free`, `pro`) + test products — **Done at the seam, real SDK deferred:** `lib/purchases` defines a `PurchasesProvider` (same pattern as `lib/analysis`). The app runs the **demoable MOCK** (a "purchase" flips a persisted db flag → Pro, survives reload). The real **RevenueCat adapter is written** (`revenuecat.ts`, dependency-injected, maps the `pro` entitlement/offerings → tier/products) but the native SDK install + RC dashboard + App Store sandbox products are deferred to pre-submit (flag `PURCHASES_REAL=false`) — same class of deferral as Sign in with Apple.
+- [x] Enrollment gating: free accounts can enroll in exactly 1 track; pro unlocks all — **Done + tested:** `entitlement.ts` (`maxTracks`/`canEnrollAnother`, `FREE_TRACK_LIMIT=1`); onboarding caps to a single journey (swaps on tap) with a "one journey on Free" note; Add-a-journey routes a 2nd track to the paywall with a Pro banner. Pro is unlimited.
+- [x] Server-side cadence gating in `analyze-skin`/`analyze-hair` — **Done (guardrail):** shared `_shared/cadence.ts` mirrors the client `CADENCE_DAYS`; both functions accept an optional `cadence` hint and return **429 `{ code:'cadence_exceeded', upgrade, waitDays }`** when over-cap. The mobile client is the authoritative live gate (blocks before calling); the server guard protects paid API units and becomes a true boundary once scanning requires auth (M10).
+- [x] Paywall UI + entitlement checks on 2nd-track / full-cadence / apparel — **Done + verified (build):** `/paywall` modal (benefits, yearly/monthly plans, restore, "maybe later"); `scanGate` caps rescans (Free monthly / Pro natural cadence) on both scan screens with a gentle "let it rest" + upgrade CTA; apparel try-on is Pro-gated (free → "Unlock with Pro").
+- [x] Gate: lint, typecheck, test pass — **Done:** 56 tests green (+13: `entitlement` + `mock`), typecheck + lint clean; full iOS Metro bundle builds (all imports resolve).
 
 ### Milestone 9: Privacy & compliance hardening (pre-submit)
 **Goal:** Defensibly private and ready for App Store health/biometric review.

@@ -13,32 +13,52 @@ import { BLOOM } from '@/features/onboarding/copy';
 import { canScan, scanBlockReason } from '@/features/privacy/consent';
 import { getAnalysisProvider } from '@/lib/analysis';
 import { getDb } from '@/lib/db';
-import { TRACKS_META } from '@/lib/tracks';
+import { scanGate, useTier, type ScanGate } from '@/lib/purchases';
+import { TRACKS_META, TRACK_KIND } from '@/lib/tracks';
 import { runSkinScan, type ScanResult } from './runScan';
 
-type State = 'checking' | 'blocked' | 'idle' | 'analyzing' | 'done' | 'error';
+type State = 'checking' | 'blocked' | 'capped' | 'idle' | 'analyzing' | 'done' | 'error';
 
 export default function ScanScreen() {
+  const { tier } = useTier();
   const [state, setState] = useState<State>('checking');
   const [blockReason, setBlockReason] = useState<string | null>(null);
+  const [gate, setGate] = useState<ScanGate | null>(null);
   const [result, setResult] = useState<ScanResult | null>(null);
 
   useEffect(() => {
     let alive = true;
-    getDb()
-      .then((db) => db.getConsent())
-      .then((consent) => {
-        if (!alive) return;
-        if (consent && canScan(consent)) setState('idle');
-        else {
-          setBlockReason(consent ? scanBlockReason(consent) : scanBlockReason({ capture: false, analysis: false, updatedAt: null }));
-          setState('blocked');
-        }
-      });
+    (async () => {
+      const db = await getDb();
+      const consent = await db.getConsent();
+      if (!alive) return;
+      if (!(consent && canScan(consent))) {
+        setBlockReason(
+          consent
+            ? scanBlockReason(consent)
+            : scanBlockReason({ capture: false, analysis: false, updatedAt: null }),
+        );
+        setState('blocked');
+        return;
+      }
+      // Cadence cap: Free is monthly on every journey; Pro gets each journey's natural rhythm.
+      const skinTrackIds = (await db.listEnrollments())
+        .map((e) => e.trackId)
+        .filter((id) => TRACK_KIND[id] === 'skin');
+      let lastSkinScanAt: string | null = null;
+      for (const id of skinTrackIds) {
+        const p = await db.latestTrackPoint(id);
+        if (p && (!lastSkinScanAt || p.capturedAt > lastSkinScanAt)) lastSkinScanAt = p.capturedAt;
+      }
+      if (!alive) return;
+      const g = scanGate(tier, skinTrackIds, lastSkinScanAt);
+      setGate(g);
+      setState(g.allowed ? 'idle' : 'capped');
+    })();
     return () => {
       alive = false;
     };
-  }, []);
+  }, [tier]);
 
   async function capture(source: 'camera' | 'library') {
     const opts: ImagePicker.ImagePickerOptions = { quality: 0.6, base64: true, mediaTypes: ['images'] };
@@ -72,6 +92,29 @@ export default function ScanScreen() {
               <ThemedText type="default" themeColor="textSecondary" style={styles.center}>
                 {blockReason}
               </ThemedText>
+            </Centered>
+          )}
+
+          {state === 'capped' && (
+            <Centered>
+              <ThemedText style={styles.emoji}>🌙</ThemedText>
+              <ThemedText type="subtitle" style={styles.center}>Let it rest a little</ThemedText>
+              <ThemedText type="default" themeColor="textSecondary" style={styles.center}>
+                {tier === 'pro'
+                  ? `Healing shows best over time. Your next scan opens in ${gate?.waitDays ?? 'a few'} day${gate?.waitDays === 1 ? '' : 's'}.`
+                  : `On Free you can scan once a month — your next one is ready in ${gate?.waitDays ?? 'a few'} day${gate?.waitDays === 1 ? '' : 's'}. Want to scan more often?`}
+              </ThemedText>
+              <View style={styles.actions}>
+                {tier !== 'pro' && (
+                  <PrimaryButton testID="scan-upgrade" label="Scan weekly with Pro" onPress={() => router.push('/paywall')} />
+                )}
+                <PrimaryButton
+                  testID="scan-capped-back"
+                  label="Back to garden"
+                  variant={tier === 'pro' ? 'primary' : 'secondary'}
+                  onPress={() => router.back()}
+                />
+              </View>
             </Centered>
           )}
 

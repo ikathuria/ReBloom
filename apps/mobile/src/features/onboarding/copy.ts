@@ -23,8 +23,9 @@ export const onboardingCopy = {
     cta: 'Continue',
   },
   tracks: {
-    title: 'Choose your journeys',
-    body: 'Pick what you would like to follow. You can add or remove journeys anytime.',
+    title: 'Choose your journey',
+    body: 'Pick what you would like to follow. You can change it anytime.',
+    freeNote: 'ReBloom is free for one journey. Add every journey later with Pro.',
     cta: (n: number) =>
       n === 0 ? 'Pick at least one' : n === 1 ? 'Start my garden' : `Start my garden (${n})`,
   },

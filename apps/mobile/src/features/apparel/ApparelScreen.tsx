@@ -9,6 +9,7 @@ import { useTheme } from '@/hooks/use-theme';
 import { BLOOM } from '@/features/onboarding/copy';
 import { PrimaryButton } from '@/features/onboarding/PrimaryButton';
 import { type FabricTip, recommendFabrics } from '@/lib/apparel/recommend';
+import { canUseTryOn, useTier } from '@/lib/purchases';
 import { useApparel } from './useApparel';
 
 const LEVEL_LABEL = { calm: 'Calm', settling: 'Settling', sensitive: 'Sensitive' } as const;
@@ -16,6 +17,7 @@ const LEVEL_LABEL = { calm: 'Calm', settling: 'Settling', sensitive: 'Sensitive'
 export default function ApparelScreen() {
   const scores = useApparel();
   const theme = useTheme();
+  const { tier } = useTier();
 
   return (
     <ThemedView style={styles.fill}>
@@ -56,9 +58,25 @@ export default function ApparelScreen() {
 
                 <View style={[styles.tryon, { borderColor: theme.backgroundSelected }]}>
                   <ThemedText type="smallBold">Virtual try-on</ThemedText>
-                  <ThemedText type="small" themeColor="textSecondary" style={styles.note}>
-                    See these fabrics on you before you buy — arriving with ReBloom Pro.
-                  </ThemedText>
+                  {canUseTryOn(tier) ? (
+                    <ThemedText type="small" themeColor="textSecondary" style={styles.note}>
+                      Included with your Pro plan — live try-on is arriving soon.
+                    </ThemedText>
+                  ) : (
+                    <>
+                      <ThemedText type="small" themeColor="textSecondary" style={styles.note}>
+                        See these fabrics on you before you buy — part of ReBloom Pro.
+                      </ThemedText>
+                      <View style={styles.tryonCta}>
+                        <PrimaryButton
+                          testID="apparel-upgrade"
+                          label="Unlock with Pro"
+                          variant="secondary"
+                          onPress={() => router.push('/paywall')}
+                        />
+                      </View>
+                    </>
+                  )}
                 </View>
 
                 <ThemedText type="small" themeColor="textSecondary" style={styles.disclaimer}>
@@ -97,6 +115,7 @@ const styles = StyleSheet.create({
   dot: { width: 10, height: 10, borderRadius: 5 },
   tipText: { flex: 1, gap: 2 },
   tryon: { marginTop: Spacing.four, padding: Spacing.three, borderRadius: Spacing.three, borderWidth: 2, gap: 2 },
+  tryonCta: { marginTop: Spacing.two },
   disclaimer: { marginTop: Spacing.three, lineHeight: 18 },
   empty: { alignItems: 'center', gap: Spacing.three, paddingTop: Spacing.six },
   emoji: { fontSize: 56 },

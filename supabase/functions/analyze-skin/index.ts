@@ -4,8 +4,12 @@
 // server-side (Edge Function secret), runs the file → task → poll flow, returns per-concern
 // scores, and NEVER persists the image. Flow + endpoints verified in docs/04-api-integration.md.
 //
-// Request  (POST JSON): { imageBase64: string, contentType?: string, concerns: string[] }
+// Request  (POST JSON): { imageBase64: string, contentType?: string, concerns: string[],
+//                         cadence?: { minIntervalDays: number, lastScanAt: string|null, tier?: 'free'|'pro' } }
 // Response (JSON):      { scores: Record<string, number> }   // concern -> ui_score (1..100)
+//   429 { error, code: 'cadence_exceeded', upgrade, waitDays } when a passed cadence hint is over-cap.
+
+import { checkCadence, type CadenceHint } from "../_shared/cadence.ts";
 
 const BASE = "https://yce-api-01.makeupar.com";
 const API_KEY = Deno.env.get("PERFECTCORP_API_KEY");
@@ -32,15 +36,21 @@ Deno.serve(async (req) => {
   if (req.method !== "POST") return json({ error: "POST only" }, 405);
   if (!API_KEY) return json({ error: "PERFECTCORP_API_KEY not configured" }, 500);
 
-  let body: { imageBase64?: string; contentType?: string; concerns?: string[] };
+  let body: { imageBase64?: string; contentType?: string; concerns?: string[]; cadence?: CadenceHint };
   try {
     body = await req.json();
   } catch {
     return json({ error: "invalid JSON body" }, 400);
   }
-  const { imageBase64, contentType = "image/jpeg", concerns } = body;
+  const { imageBase64, contentType = "image/jpeg", concerns, cadence } = body;
   if (!imageBase64 || !Array.isArray(concerns) || concerns.length === 0) {
     return json({ error: "imageBase64 and non-empty concerns[] required" }, 400);
+  }
+
+  // Guardrail: refuse an over-cadence scan (protects paid API units). See _shared/cadence.ts.
+  const cap = checkCadence(cadence);
+  if (cap.overCap) {
+    return json({ error: "scan not due yet", code: "cadence_exceeded", upgrade: cadence?.tier !== "pro", waitDays: cap.waitDays }, 429);
   }
 
   const auth = { Authorization: `Bearer ${API_KEY}` };

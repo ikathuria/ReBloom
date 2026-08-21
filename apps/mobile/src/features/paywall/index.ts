@@ -1,2 +1,1 @@
-// paywall feature — see PLAN.md. Populated in a later milestone.
-export {};
+export { default as PaywallScreen } from './PaywallScreen';

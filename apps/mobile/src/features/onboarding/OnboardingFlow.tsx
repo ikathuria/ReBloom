@@ -20,10 +20,16 @@ type Step = 'welcome' | 'consent' | 'tracks';
 
 export interface OnboardingFlowProps {
   onComplete: (result: OnboardingResult) => void;
+  /**
+   * How many journeys the user may start now (free = 1; Pro = unlimited). At the cap, tapping a
+   * new journey when only one is allowed *switches* to it; otherwise extra taps are ignored.
+   * Defaults to unlimited.
+   */
+  maxTracks?: number;
 }
 
 /** Three-step first-run flow: welcome → consent → choose journeys. Pure UI; persistence is the caller's job. */
-export function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
+export function OnboardingFlow({ onComplete, maxTracks = Infinity }: OnboardingFlowProps) {
   const [step, setStep] = useState<Step>('welcome');
   const [consent, setConsentState] = useState<ConsentState>(initialConsent);
   const [selected, setSelected] = useState<Set<TrackId>>(new Set());
@@ -31,8 +37,14 @@ export function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
   const toggleTrack = (id: TrackId) =>
     setSelected((prev) => {
       const next = new Set(prev);
-      if (next.has(id)) next.delete(id);
-      else next.add(id);
+      if (next.has(id)) {
+        next.delete(id);
+      } else if (next.size < maxTracks) {
+        next.add(id);
+      } else if (maxTracks === 1) {
+        // Single-journey (free): tapping another swaps the selection.
+        return new Set([id]);
+      }
       return next;
     });
 
@@ -93,12 +105,19 @@ export function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
             title={C.tracks.title}
             body={C.tracks.body}
             footer={
-              <PrimaryButton
-                testID="tracks-done"
-                label={C.tracks.cta(selected.size)}
-                disabled={selected.size === 0}
-                onPress={() => onComplete({ consent, trackIds: [...selected] })}
-              />
+              <>
+                {Number.isFinite(maxTracks) && (
+                  <ThemedText type="small" themeColor="textSecondary" style={styles.footerNote}>
+                    {C.tracks.freeNote}
+                  </ThemedText>
+                )}
+                <PrimaryButton
+                  testID="tracks-done"
+                  label={C.tracks.cta(selected.size)}
+                  disabled={selected.size === 0}
+                  onPress={() => onComplete({ consent, trackIds: [...selected] })}
+                />
+              </>
             }
           >
             {TRACK_IDS.map((id) => {
