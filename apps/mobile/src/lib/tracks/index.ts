@@ -27,6 +27,12 @@ export interface TrackMeta {
   cadence: Cadence;
   /** One warm line for the picker. */
   blurb: string;
+  /**
+   * YouCam concern keys this track reads (real HD Skin Analysis keys, verified live —
+   * see docs/04-api-integration.md). Skin scores are 1..100, higher = healthier, so a
+   * track's bloom is the average of these. Hair uses the separate Hair Density API.
+   */
+  concerns: string[];
   /** Recovery carries extra privacy/consent framing (see docs/02). */
   sensitive?: boolean;
 }
@@ -39,6 +45,7 @@ export const TRACKS_META: Record<TrackId, TrackMeta> = {
     cadence: 'weekly',
     sensitive: true,
     blurb: 'Watch your skin recover its calm, hydration, and glow.',
+    concerns: ['hd_moisture', 'hd_redness', 'hd_radiance', 'hd_texture', 'hd_age_spot'],
   },
   acne: {
     id: 'acne',
@@ -46,6 +53,7 @@ export const TRACKS_META: Record<TrackId, TrackMeta> = {
     kind: 'skin',
     cadence: 'weekly',
     blurb: 'Follow breakouts, oiliness, and texture settling down.',
+    concerns: ['hd_acne', 'hd_oiliness', 'hd_pore', 'hd_redness', 'hd_texture'],
   },
   redness: {
     id: 'redness',
@@ -53,6 +61,7 @@ export const TRACKS_META: Record<TrackId, TrackMeta> = {
     kind: 'skin',
     cadence: 'weekly',
     blurb: 'See redness ease as your skin barrier steadies.',
+    concerns: ['hd_redness', 'hd_moisture'],
   },
   hydration: {
     id: 'hydration',
@@ -60,6 +69,7 @@ export const TRACKS_META: Record<TrackId, TrackMeta> = {
     kind: 'skin',
     cadence: 'weekly',
     blurb: 'Track moisture returning — often the first visible win.',
+    concerns: ['hd_moisture'],
   },
   'dark-spots': {
     id: 'dark-spots',
@@ -67,6 +77,7 @@ export const TRACKS_META: Record<TrackId, TrackMeta> = {
     kind: 'skin',
     cadence: 'biweekly',
     blurb: 'Follow marks fading and your tone evening out.',
+    concerns: ['hd_age_spot', 'hd_radiance', 'hd_texture'],
   },
   'under-eye': {
     id: 'under-eye',
@@ -74,6 +85,7 @@ export const TRACKS_META: Record<TrackId, TrackMeta> = {
     kind: 'skin',
     cadence: 'weekly',
     blurb: 'Notice the “I look rested again” moments returning.',
+    concerns: ['hd_dark_circle', 'hd_eye_bag', 'hd_tear_trough'],
   },
   'hair-regrowth': {
     id: 'hair-regrowth',
@@ -81,6 +93,7 @@ export const TRACKS_META: Record<TrackId, TrackMeta> = {
     kind: 'hair',
     cadence: 'monthly',
     blurb: 'A gentle month-over-month look at density coming back.',
+    concerns: ['hair_density'], // separate Hair Density API (not a skin dst_action) — M5
   },
 };
 
