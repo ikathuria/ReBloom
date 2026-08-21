@@ -35,7 +35,14 @@
           "imageWidth": 76
         }
       ],
-      "expo-secure-store"
+      "expo-secure-store",
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "ReBloom uses your photos so you can add a scan from your library.",
+          "cameraPermission": "ReBloom uses the camera to take a scan."
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true,
