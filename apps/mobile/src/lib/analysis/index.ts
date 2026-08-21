@@ -1,14 +1,16 @@
+import { isSupabaseConfigured } from '@/lib/supabase/client';
 import type { AnalysisProvider } from './types';
 import { createMockProvider } from './mock';
+import { createPerfectCorpProvider } from './perfectcorp';
 
 export * from './types';
-export { createMockProvider };
+export { createMockProvider, createPerfectCorpProvider };
 
-// App-wide provider. TODO(M3 part 3): return a PerfectCorpProvider that calls the
-// analyze-skin Supabase Edge Function; keep the mock for tests/web/offline demos.
+// App-wide provider: the real Perfect Corp proxy once Supabase is configured, else the mock
+// (so the app runs and demos offline / before the backend is set up).
 let provider: AnalysisProvider | null = null;
 
 export function getAnalysisProvider(): AnalysisProvider {
-  if (!provider) provider = createMockProvider();
+  if (!provider) provider = isSupabaseConfigured ? createPerfectCorpProvider() : createMockProvider();
   return provider;
 }

@@ -27,7 +27,7 @@ async function seedEnrollments(db: ReturnType<typeof createInMemoryDb>, ids: str
 describe('runSkinScan', () => {
   let counter = 0;
   const deps = () => ({
-    imageUri: 'file:///selfie.jpg',
+    imageBase64: 'ZmFrZQ==',
     provider: fixedProvider,
     now: () => new Date('2026-08-20T10:00:00.000Z'),
     genId: () => `id-${counter++}`,

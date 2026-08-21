@@ -8,9 +8,9 @@ export type SkinScores = ConcernScores;
 
 export interface AnalysisProvider {
   /**
-   * Analyze a skin photo for the given YouCam concern keys → per-concern ui_scores (1..100,
-   * higher = healthier). The real implementation proxies through the analyze-skin Edge Function
-   * (M3 part 3); the mock returns plausible scores for local development and demos.
+   * Analyze a base64-encoded skin photo for the given YouCam concern keys → per-concern
+   * ui_scores (1..100, higher = healthier). The real implementation proxies through the
+   * analyze-skin Edge Function; the mock returns plausible scores for local dev and demos.
    */
-  analyzeSkin(imageUri: string, concerns: string[]): Promise<SkinScores>;
+  analyzeSkin(imageBase64: string, concerns: string[]): Promise<SkinScores>;
 }

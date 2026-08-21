@@ -20,7 +20,7 @@ export interface ScanResult {
 }
 
 export interface RunScanParams {
-  imageUri: string;
+  imageBase64: string;
   provider: AnalysisProvider;
   db: ReBloomDb;
   /** Injected for tests. */
@@ -35,7 +35,7 @@ const pickTrackScores = (trackId: TrackId, scores: ConcernScores): ConcernScores
 };
 
 export async function runSkinScan({
-  imageUri,
+  imageBase64,
   provider,
   db,
   now = () => new Date(),
@@ -48,7 +48,7 @@ export async function runSkinScan({
     .filter((id) => TRACK_KIND[id] === 'skin');
   if (skinTrackIds.length === 0) return { capturedAt, blooms: [] };
 
-  const scores = await provider.analyzeSkin(imageUri, skinUnionConcerns(skinTrackIds));
+  const scores = await provider.analyzeSkin(imageBase64, skinUnionConcerns(skinTrackIds));
   const bloomMap = bloomsForScan(skinTrackIds, scores);
 
   const blooms: TrackBloom[] = [];

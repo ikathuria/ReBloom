@@ -41,15 +41,17 @@ export default function ScanScreen() {
   }, []);
 
   async function capture(source: 'camera' | 'library') {
+    const opts: ImagePicker.ImagePickerOptions = { quality: 0.6, base64: true, mediaTypes: ['images'] };
     const picked =
       source === 'camera'
-        ? await ImagePicker.launchCameraAsync({ quality: 0.7 })
-        : await ImagePicker.launchImageLibraryAsync({ quality: 0.7, mediaTypes: ['images'] });
-    if (picked.canceled || !picked.assets?.[0]) return;
+        ? await ImagePicker.launchCameraAsync(opts)
+        : await ImagePicker.launchImageLibraryAsync(opts);
+    const base64 = picked.assets?.[0]?.base64;
+    if (picked.canceled || !base64) return;
     setState('analyzing');
     try {
       const db = await getDb();
-      const r = await runSkinScan({ imageUri: picked.assets[0].uri, provider: getAnalysisProvider(), db });
+      const r = await runSkinScan({ imageBase64: base64, provider: getAnalysisProvider(), db });
       setResult(r);
       setState('done');
     } catch {

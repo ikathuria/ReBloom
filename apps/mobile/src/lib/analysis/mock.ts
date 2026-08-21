@@ -12,7 +12,7 @@ export function createMockProvider(seed = Date.now()): AnalysisProvider {
     return n / 0x7fffffff;
   };
   return {
-    async analyzeSkin(_imageUri, concerns) {
+    async analyzeSkin(_imageBase64, concerns) {
       await new Promise((r) => setTimeout(r, 900));
       const scores: SkinScores = {};
       for (const c of concerns) scores[c] = 60 + Math.round(rand() * 35);
