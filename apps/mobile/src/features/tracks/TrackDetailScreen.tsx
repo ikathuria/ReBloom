@@ -1,5 +1,5 @@
 import { router, useLocalSearchParams } from 'expo-router';
-import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { ActivityIndicator, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { ThemedText } from '@/components/themed-text';
@@ -24,6 +24,7 @@ export default function TrackDetailScreen() {
   const meta = TRACKS_META[trackId];
   const isHair = meta.kind === 'hair';
   const scanRoute = isHair ? '/scan-hair' : '/scan';
+  const loading = points === null;
   const latest = points && points.length ? points[points.length - 1] : null;
 
   return (
@@ -36,10 +37,14 @@ export default function TrackDetailScreen() {
         <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
           <ThemedText type="title">{meta.sensitive ? `${meta.name}  ·  private` : meta.name}</ThemedText>
 
-          {latest ? (
+          {loading ? (
+            <View testID="track-loading" style={styles.loading}>
+              <ActivityIndicator color={BLOOM} />
+            </View>
+          ) : latest ? (
             <>
               <View style={styles.hero}>
-                <BloomVisual bloom={latest.bloom} hero />
+                <BloomVisual bloom={latest.bloom} hero name={meta.name} />
               </View>
 
               <Section title="Your trend">
@@ -115,6 +120,7 @@ const styles = StyleSheet.create({
   back: { paddingHorizontal: Spacing.four, paddingVertical: Spacing.two },
   backText: { fontSize: 16, fontWeight: '700' },
   scroll: { paddingHorizontal: Spacing.four, paddingBottom: Spacing.five, gap: Spacing.four },
+  loading: { alignItems: 'center', paddingVertical: Spacing.six },
   hero: { alignItems: 'center', paddingVertical: Spacing.three },
   section: { gap: Spacing.two },
   bars: { flexDirection: 'row', alignItems: 'flex-end', gap: Spacing.two, height: 110, paddingTop: Spacing.two },

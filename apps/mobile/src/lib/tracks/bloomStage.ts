@@ -15,3 +15,13 @@ export function bloomStage(bloom: number | null): BloomStage {
   if (bloom < 90) return { key: 'bloom', emoji: '🌸', label: 'Blooming' };
   return { key: 'full', emoji: '🌺', label: 'Full bloom' };
 }
+
+/**
+ * Spoken label for a bloom visual (VoiceOver). Turns the decorative emoji + number into one clear
+ * phrase, e.g. "Recovery Healing, blooming, 80 out of 100" — never reads a raw emoji.
+ */
+export function bloomAccessibilityLabel(bloom: number | null, name?: string): string {
+  const prefix = name ? `${name}, ` : '';
+  if (bloom === null) return `${prefix}ready to start, no scans yet`;
+  return `${prefix}${bloomStage(bloom).label.toLowerCase()}, ${bloom} out of 100`;
+}

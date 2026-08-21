@@ -134,7 +134,7 @@ export default function ScanHairScreen() {
                 <ThemedText type="title">Your hair bloom</ThemedText>
               </View>
               <View style={styles.centered}>
-                <BloomVisual bloom={result.bloom} hero />
+                <BloomVisual bloom={result.bloom} hero name="Hair Regrowth" />
                 <ThemedText type="default" themeColor="textSecondary" style={styles.center}>
                   Gentle and slow is the goal. See you next month.
                 </ThemedText>
@@ -150,7 +150,11 @@ export default function ScanHairScreen() {
 
           {state === 'error' && (
             <View style={styles.centered}>
+              <ThemedText style={styles.emoji}>🌧️</ThemedText>
               <ThemedText type="subtitle" style={styles.center}>That scan didn’t go through</ThemedText>
+              <ThemedText type="default" themeColor="textSecondary" style={styles.center}>
+                It’s not you — let’s try again in a moment.
+              </ThemedText>
               <PrimaryButton testID="hair-retry" label="Try again" onPress={() => setState('idle')} />
             </View>
           )}

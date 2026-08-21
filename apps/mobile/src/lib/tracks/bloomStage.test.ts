@@ -1,4 +1,4 @@
-import { bloomStage } from './bloomStage';
+import { bloomAccessibilityLabel, bloomStage } from './bloomStage';
 import { concernLabel } from './concernLabels';
 
 describe('bloomStage', () => {
@@ -12,6 +12,12 @@ describe('bloomStage', () => {
     expect(bloomStage(70).key).toBe('bud');
     expect(bloomStage(80).key).toBe('bloom');
     expect(bloomStage(95).key).toBe('full');
+  });
+
+  it('speaks a clear label for VoiceOver (no raw emoji)', () => {
+    expect(bloomAccessibilityLabel(80, 'Recovery Healing')).toBe('Recovery Healing, blooming, 80 out of 100');
+    expect(bloomAccessibilityLabel(null, 'Acne Care')).toBe('Acne Care, ready to start, no scans yet');
+    expect(bloomAccessibilityLabel(50)).toBe('growing, 50 out of 100');
   });
 
   it('has friendly, non-diagnostic concern labels', () => {

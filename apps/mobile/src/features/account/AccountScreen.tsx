@@ -147,7 +147,13 @@ function SignedIn({ email }: { email: string | null }) {
             Encrypts and syncs your scores — never your photos. Off by default; turn it off anytime.
           </ThemedText>
         </View>
-        <Switch testID="account-sync" value={sync} onValueChange={toggleSync} trackColor={{ true: BLOOM }} />
+        <Switch
+          testID="account-sync"
+          value={sync}
+          onValueChange={toggleSync}
+          trackColor={{ true: BLOOM }}
+          accessibilityLabel="Back up my scores to my account"
+        />
       </View>
       {status ? <ThemedText type="small" themeColor="textSecondary">{status}</ThemedText> : null}
 

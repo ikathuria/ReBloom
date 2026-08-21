@@ -3,15 +3,32 @@ import { StyleSheet, View } from 'react-native';
 import { ThemedText } from '@/components/themed-text';
 import { Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
-import { bloomStage } from '@/lib/tracks/bloomStage';
+import { bloomAccessibilityLabel, bloomStage } from '@/lib/tracks/bloomStage';
 import { BLOOM } from '@/features/onboarding/copy';
 
-/** The growth-stage emoji + score + a thin progress bar. `hero` is the big version for headers. */
-export function BloomVisual({ bloom, hero = false }: { bloom: number | null; hero?: boolean }) {
+/**
+ * The growth-stage emoji + score + a thin progress bar. `hero` is the big version for headers.
+ * Presents as one VoiceOver element with a spoken label (pass `label`/`name`) so the decorative
+ * emoji is never read raw. Pass `decorative` when a parent (e.g. a garden card) already labels it.
+ */
+export function BloomVisual({
+  bloom,
+  hero = false,
+  name,
+  decorative = false,
+}: {
+  bloom: number | null;
+  hero?: boolean;
+  name?: string;
+  decorative?: boolean;
+}) {
   const theme = useTheme();
   const stage = bloomStage(bloom);
+  const a11y = decorative
+    ? { importantForAccessibility: 'no-hide-descendants' as const }
+    : { accessible: true, accessibilityRole: 'image' as const, accessibilityLabel: bloomAccessibilityLabel(bloom, name) };
   return (
-    <View style={[styles.wrap, hero && styles.wrapHero]}>
+    <View style={[styles.wrap, hero && styles.wrapHero]} {...a11y}>
       <ThemedText style={hero ? styles.emojiHero : styles.emoji}>{stage.emoji}</ThemedText>
       <View style={styles.meta}>
         <ThemedText type={hero ? 'title' : 'smallBold'}>

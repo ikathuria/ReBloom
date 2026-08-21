@@ -319,10 +319,10 @@ Tasks:
 **Goal:** No obvious rough edges; warm, calm, resilient.
 
 Tasks:
-- [ ] Loading/empty/error states across scan (skin + hair), garden, per-track dashboards, apparel (network fail, over-cap, analysis error) with supportive copy — Done when: each failure path shows a non-alarming, actionable message
-- [ ] Accessibility pass (dynamic type, contrast, VoiceOver labels on bloom visuals) — Done when: core flows pass a manual VoiceOver + large-text check
-- [ ] Performance: scan round-trip feedback, garden + chart render on low-end devices — Done when: no dropped-frame jank on a mid-range device
-- [ ] Gate: lint, typecheck, test pass — Done when: all green
+- [x] Loading/empty/error states across scan (skin + hair), garden, per-track dashboards, apparel — **Done:** garden now shows a loading spinner + a warm "ready to plant" empty state (after a full delete) instead of a bare grid; track detail shows a loader (no more empty-state flash before points load); apparel shows a loader while the latest scan resolves; the hair error state was warmed to match skin (emoji + "it's not you" copy). Over-cadence + consent-blocked + analysis-error states already exist and stay non-alarming.
+- [x] Accessibility pass (dynamic type, contrast, VoiceOver labels on bloom visuals) — **Done (code-level):** `BloomVisual` is now one VoiceOver element with a spoken label (`bloomAccessibilityLabel`, tested) so the decorative emoji is never read raw; each garden card announces one coherent phrase ("Recovery Healing, blooming, 80 out of 100. Scanned today") + a hint; the sync toggle and account link are labeled. Text uses `ThemedText` (dynamic type scales). *Manual VoiceOver + large-type sweep on a device folds into the M10 TestFlight smoke test (the Simulator panel is currently unavailable here).*
+- [~] Performance — the garden grid, track sparkline (`TrendBars`), and bloom visuals are all lightweight `View`-based renders (no heavy lists/animation), so no jank is expected; on-device frame profiling is part of the M10 device smoke test.
+- [x] Gate: lint, typecheck, test pass — **Done:** 68 tests green (+1), typecheck + lint clean; full iOS Metro bundle builds.
 
 ---
 

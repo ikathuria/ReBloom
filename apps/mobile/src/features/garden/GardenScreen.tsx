@@ -1,5 +1,5 @@
 import { router } from 'expo-router';
-import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { ActivityIndicator, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { ThemedText } from '@/components/themed-text';
@@ -8,6 +8,7 @@ import { BottomTabInset, Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 import { PrimaryButton } from '@/features/onboarding/PrimaryButton';
 import { BLOOM } from '@/features/onboarding/copy';
+import { bloomAccessibilityLabel } from '@/lib/tracks/bloomStage';
 import { BloomVisual } from './BloomVisual';
 import { useGarden, type GardenEntry } from './useGarden';
 
@@ -21,6 +22,8 @@ function scannedLabel(entry: GardenEntry): string {
 
 export default function GardenScreen() {
   const { entries } = useGarden();
+  const loading = entries === null;
+  const empty = entries !== null && entries.length === 0;
 
   return (
     <ThemedView style={styles.fill}>
@@ -30,6 +33,7 @@ export default function GardenScreen() {
             testID="garden-account"
             onPress={() => router.push('/account')}
             accessibilityRole="button"
+            accessibilityLabel="Account and sync"
             style={styles.accountLink}
           >
             <ThemedText style={[styles.accountText, { color: BLOOM }]}>Account</ThemedText>
@@ -39,9 +43,27 @@ export default function GardenScreen() {
             Each journey grows as you heal. Take a scan to tend it.
           </ThemedText>
 
-          <View style={styles.grid}>
-            {entries?.map((e) => <GardenCard key={e.trackId} entry={e} />)}
-          </View>
+          {loading && (
+            <View testID="garden-loading" style={styles.center}>
+              <ActivityIndicator color={BLOOM} />
+            </View>
+          )}
+
+          {empty && (
+            <View style={styles.emptyState}>
+              <ThemedText style={styles.emptyEmoji}>🌱</ThemedText>
+              <ThemedText type="subtitle" style={styles.center}>Your garden is ready to plant</ThemedText>
+              <ThemedText type="default" themeColor="textSecondary" style={styles.centerText}>
+                Add a journey to start following your healing.
+              </ThemedText>
+            </View>
+          )}
+
+          {!loading && !empty && (
+            <View style={styles.grid}>
+              {entries?.map((e) => <GardenCard key={e.trackId} entry={e} />)}
+            </View>
+          )}
 
           <Pressable
             testID="add-journey"
@@ -53,9 +75,11 @@ export default function GardenScreen() {
           </Pressable>
         </ScrollView>
 
-        <View style={styles.actions}>
-          <PrimaryButton testID="garden-scan" label="Take a scan" onPress={() => router.push('/scan')} />
-        </View>
+        {!empty && (
+          <View style={styles.actions}>
+            <PrimaryButton testID="garden-scan" label="Take a scan" onPress={() => router.push('/scan')} />
+          </View>
+        )}
       </SafeAreaView>
     </ThemedView>
   );
@@ -63,14 +87,17 @@ export default function GardenScreen() {
 
 function GardenCard({ entry }: { entry: GardenEntry }) {
   const theme = useTheme();
+  const label = `${entry.name}${entry.sensitive ? ', private' : ''}. ${bloomAccessibilityLabel(entry.bloom)}. ${scannedLabel(entry)}`;
   return (
     <Pressable
       testID={`garden-card-${entry.trackId}`}
       onPress={() => router.push(`/track/${entry.trackId}`)}
       accessibilityRole="button"
+      accessibilityLabel={label}
+      accessibilityHint="Opens this journey"
       style={[styles.card, { backgroundColor: theme.backgroundElement }]}
     >
-      <BloomVisual bloom={entry.bloom} />
+      <BloomVisual bloom={entry.bloom} decorative />
       <ThemedText type="smallBold" style={styles.cardName} numberOfLines={1}>
         {entry.name}
       </ThemedText>
@@ -100,4 +127,8 @@ const styles = StyleSheet.create({
   addRow: { alignSelf: 'center', paddingVertical: Spacing.three },
   addText: { fontSize: 16, fontWeight: '700' },
   actions: { paddingHorizontal: Spacing.four, paddingBottom: BottomTabInset + Spacing.four },
+  center: { alignItems: 'center', paddingVertical: Spacing.six },
+  centerText: { textAlign: 'center' },
+  emptyState: { alignItems: 'center', gap: Spacing.two, paddingTop: Spacing.six, paddingBottom: Spacing.four },
+  emptyEmoji: { fontSize: 56 },
 });

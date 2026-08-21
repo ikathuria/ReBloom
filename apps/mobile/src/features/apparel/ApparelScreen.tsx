@@ -1,5 +1,5 @@
 import { router } from 'expo-router';
-import { ScrollView, StyleSheet, View } from 'react-native';
+import { ActivityIndicator, ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { ThemedText } from '@/components/themed-text';
@@ -29,7 +29,11 @@ export default function ApparelScreen() {
             Fabric suggestions tuned to how your skin looks right now.
           </ThemedText>
 
-          {scores === undefined && null}
+          {scores === undefined && (
+            <View testID="apparel-loading" style={styles.loading}>
+              <ActivityIndicator color={BLOOM} />
+            </View>
+          )}
 
           {scores === null && (
             <View style={styles.empty}>
@@ -121,4 +125,5 @@ const styles = StyleSheet.create({
   empty: { alignItems: 'center', gap: Spacing.three, paddingTop: Spacing.six },
   emoji: { fontSize: 56 },
   center: { textAlign: 'center' },
+  loading: { alignItems: 'center', paddingVertical: Spacing.six },
 });
