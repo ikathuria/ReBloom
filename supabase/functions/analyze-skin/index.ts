@@ -10,6 +10,7 @@
 //   429 { error, code: 'cadence_exceeded', upgrade, waitDays } when a passed cadence hint is over-cap.
 
 import { checkCadence, type CadenceHint } from "../_shared/cadence.ts";
+import { reportError } from "../_shared/report.ts";
 
 const BASE = "https://yce-api-01.makeupar.com";
 const API_KEY = Deno.env.get("PERFECTCORP_API_KEY");
@@ -120,6 +121,7 @@ Deno.serve(async (req) => {
     }
     return json({ scores });
   } catch (e) {
+    reportError("analyze-skin", e);
     return json({ error: "proxy error", detail: String(e) }, 500);
   }
 });

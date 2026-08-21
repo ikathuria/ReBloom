@@ -14,6 +14,7 @@ import { canScan, scanBlockReason } from '@/features/privacy/consent';
 import { NOT_MEDICAL, PHOTO_PROMISE } from '@/features/privacy/disclaimer';
 import { getAnalysisProvider } from '@/lib/analysis';
 import { getDb } from '@/lib/db';
+import { captureError } from '@/lib/telemetry';
 import { scanGate, useTier, type ScanGate } from '@/lib/purchases';
 import { TRACKS_META, TRACK_KIND } from '@/lib/tracks';
 import { runSkinScan, type ScanResult } from './runScan';
@@ -75,7 +76,8 @@ export default function ScanScreen() {
       const r = await runSkinScan({ imageBase64: base64, provider: getAnalysisProvider(), db });
       setResult(r);
       setState('done');
-    } catch {
+    } catch (e) {
+      captureError(e, { scope: 'skin-scan' }); // never the image — scrubbed regardless
       setState('error');
     }
   }

@@ -304,11 +304,16 @@ Tasks:
 ### Milestone 10: Deploy (TestFlight / internal track)
 **Goal:** Real builds in testers' hands, error monitoring live.
 
+> **Credential-gated milestone.** Everything the repo can carry is built; the steps needing your
+> accounts (Expo/Apple/App Store Connect/cloud Supabase/RevenueCat/Sentry) are scripted in
+> **`docs/05-deploy.md`**. An agent can't create accounts, enter passwords, or accept Apple/Play
+> terms, so those run on your machine.
+
 Tasks:
-- [ ] EAS Build profiles (dev, preview, production) + EAS Submit — Done when: a production build uploads to TestFlight and Play internal testing
-- [ ] Sentry wired (client + Edge Functions), scrubbing PII/images — Done when: a forced test error appears in Sentry with no image/PII payload
-- [ ] Smoke test on a physical device from the internal track — Done when: onboarding→choose track→scan→garden works end-to-end on a real device via TestFlight
-- [ ] Gate: lint, typecheck, test pass + CI green — Done when: all green
+- [x] EAS Build profiles (dev, preview, production) + EAS Submit — **Config landed:** `apps/mobile/eas.json` (development / development-simulator / preview / production profiles + iOS/Android submit config with placeholders) and `.github/workflows/deploy.yml` (production build on a `v*` tag, gated on the `EXPO_TOKEN` secret). Running the actual build/submit needs an Expo + Apple account → `docs/05-deploy.md` §6.
+- [x] Sentry wired (client + Edge Functions), scrubbing PII/images — **Seam + scrubbing done + tested:** `lib/telemetry` (`captureError` + `scrubContext`) redacts images/PII (any base64 blob, `email`/`token`/`authorization`/… keys) before any reporter sees them; wired into both scan error paths (tag only, never the image). Edge Functions report via `_shared/report.ts` (DSN-gated, forwards only a location tag + message). Installing `@sentry/react-native` + registering the reporter is a one-liner at deploy (`docs/05-deploy.md` §5).
+- [~] Smoke test on a physical device from the internal track — **Deferred (needs Apple account + TestFlight):** the end-to-end device checklist (onboarding→scan→garden, sync persistence, export/delete, forced-error-with-no-PII) is written in `docs/05-deploy.md` §8; run it once the TestFlight build is up.
+- [x] Gate: lint, typecheck, test pass + CI green — **Done:** 67 tests green (+7 telemetry), typecheck + lint clean; `eas.json` valid; full iOS Metro bundle builds.
 
 ### Milestone 11: Polish
 **Goal:** No obvious rough edges; warm, calm, resilient.

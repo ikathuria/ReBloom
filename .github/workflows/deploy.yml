@@ -1,0 +1,29 @@
+# Production build/submit on a version tag. Inert until the repo secret EXPO_TOKEN is set
+# (an Expo access token). App Store / Play submission credentials live in eas.json + EAS.
+# Cloud Supabase (functions deploy / db push) is a separate manual step — see docs/05-deploy.md.
+name: Deploy
+
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    if: ${{ github.repository_owner != '' }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: apps/mobile/package-lock.json
+      - uses: expo/expo-github-action@v8
+        with:
+          eas-version: latest
+          token: ${{ secrets.EXPO_TOKEN }}
+      - run: npm --prefix apps/mobile ci
+      - name: EAS production build
+        working-directory: apps/mobile
+        run: eas build --platform all --profile production --non-interactive --no-wait

@@ -11,6 +11,18 @@ export const signInEmail = (email: string, password: string) =>
 
 export const signOut = () => getSupabase().auth.signOut();
 
+/**
+ * Exchange an Apple identity token for a Supabase session (Sign in with Apple).
+ *
+ * The native step — `AppleAuthentication.signInAsync()` from `expo-apple-authentication` — runs at
+ * the call site and yields the `identityToken`; this helper does the Supabase side. Kept as a seam
+ * so the (native, entitlement-gated) package stays out of the JS bundle until it's installed and a
+ * dev build exists. Enable at deploy — see docs/05-deploy.md. Requires the "Sign in with Apple"
+ * capability + `ios.usesAppleSignIn` and the Apple provider configured in Supabase Auth.
+ */
+export const signInWithAppleToken = (identityToken: string) =>
+  getSupabase().auth.signInWithIdToken({ provider: 'apple', token: identityToken });
+
 export interface AuthState {
   configured: boolean;
   loading: boolean;

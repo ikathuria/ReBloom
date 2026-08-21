@@ -15,6 +15,7 @@ import { canScan, scanBlockReason } from '@/features/privacy/consent';
 import { HAIR_TREND, NOT_MEDICAL, PHOTO_PROMISE } from '@/features/privacy/disclaimer';
 import { getHairAnalyzer } from '@/lib/analysis';
 import { getDb } from '@/lib/db';
+import { captureError } from '@/lib/telemetry';
 import { scanGate, useTier, type ScanGate } from '@/lib/purchases';
 import { runHairScan, type HairScanResult } from './runHairScan';
 
@@ -64,7 +65,8 @@ export default function ScanHairScreen() {
       const r = await runHairScan({ imageBase64: base64, analyzer: getHairAnalyzer(), db });
       setResult(r);
       setState('done');
-    } catch {
+    } catch (e) {
+      captureError(e, { scope: 'hair-scan' }); // never the image — scrubbed regardless
       setState('error');
     }
   }
