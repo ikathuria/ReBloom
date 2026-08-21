@@ -1,4 +1,4 @@
-import { initialConsent, setConsent, hasDecided, canScan, scanBlockReason } from './consent';
+import { initialConsent, setConsent, hasDecided, markDecided, canScan, scanBlockReason } from './consent';
 
 const T0 = new Date('2026-08-12T10:00:00.000Z');
 
@@ -24,6 +24,14 @@ describe('consent state', () => {
     s = setConsent(s, 'analysis', true, T0);
     expect(canScan(s)).toBe(true);
     expect(scanBlockReason(s)).toBeNull();
+  });
+
+  it('markDecided stamps a decision even when both toggles are off, idempotently', () => {
+    const decided = markDecided(initialConsent(), T0);
+    expect(hasDecided(decided)).toBe(true); // completing onboarding counts as done
+    expect(canScan(decided)).toBe(false); // ...but declining still blocks scanning
+    const again = markDecided(decided, new Date('2027-01-01T00:00:00.000Z'));
+    expect(again.updatedAt).toBe(T0.toISOString()); // idempotent — keeps the first timestamp
   });
 
   it('revoking a consent blocks scanning again', () => {

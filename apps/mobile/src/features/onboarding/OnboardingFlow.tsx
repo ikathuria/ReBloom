@@ -5,7 +5,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Spacing } from '@/constants/theme';
-import { type ConsentState, initialConsent, setConsent } from '@/features/privacy/consent';
+import { type ConsentState, initialConsent, markDecided, setConsent } from '@/features/privacy/consent';
 import { TRACKS_META, TRACK_IDS, type TrackId } from '@/lib/tracks';
 import { onboardingCopy as C } from './copy';
 import { PrimaryButton } from './PrimaryButton';
@@ -60,7 +60,14 @@ export function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
                 <ThemedText type="small" themeColor="textSecondary" style={styles.footerNote}>
                   {C.consent.footer}
                 </ThemedText>
-                <PrimaryButton testID="consent-continue" label={C.consent.cta} onPress={() => setStep('tracks')} />
+                <PrimaryButton
+                  testID="consent-continue"
+                  label={C.consent.cta}
+                  onPress={() => {
+                    setConsentState((s) => markDecided(s));
+                    setStep('tracks');
+                  }}
+                />
               </>
             }
           >

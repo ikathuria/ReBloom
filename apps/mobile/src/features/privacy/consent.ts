@@ -34,6 +34,15 @@ export function setConsent(
 /** The user has finished the consent step once they've made any explicit decision. */
 export const hasDecided = (s: ConsentState): boolean => s.updatedAt !== null;
 
+/**
+ * Mark consent as decided when the user passes the consent step — even if they left both
+ * toggles off (declining is a valid choice). Stamps a timestamp if none is set yet, so the
+ * first-run gate treats onboarding as complete. Idempotent.
+ */
+export function markDecided(state: ConsentState, now: Date = new Date()): ConsentState {
+  return state.updatedAt ? state : { ...state, updatedAt: now.toISOString() };
+}
+
 /** Scanning requires both a way to provide a photo and agreement to analyze it. */
 export const canScan = (s: ConsentState): boolean => s.capture && s.analysis;
 

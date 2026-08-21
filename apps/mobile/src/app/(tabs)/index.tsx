@@ -3,21 +3,10 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
-import { OnboardingFlow, useOnboardingGate } from '@/features/onboarding';
 import { Spacing } from '@/constants/theme';
 
-export default function HomeScreen() {
-  const { status, complete } = useOnboardingGate();
-
-  if (status === 'loading') {
-    return <ThemedView style={styles.fill} />;
-  }
-
-  if (status === 'needed') {
-    return <OnboardingFlow onComplete={complete} />;
-  }
-
-  // status === 'done' — placeholder garden until M4 builds the real one.
+// Placeholder garden — M4 builds the real multi-track garden.
+export default function GardenScreen() {
   return (
     <ThemedView style={styles.fill}>
       <SafeAreaView style={styles.center}>
