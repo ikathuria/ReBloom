@@ -4,7 +4,7 @@
 > what the project is, how it's built, and where things are. **Keep it in sync** — update it
 > whenever the stack, structure, tracks, conventions, or status changes.
 
-_Last updated: 2026-08-12 (planning; no code yet)_
+_Last updated: 2026-08-21 (M0–M7 complete & verified on iOS; M8 monetization next)_
 
 ---
 
