@@ -4,7 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
-import { Spacing } from '@/constants/theme';
+import { BottomTabInset, Spacing } from '@/constants/theme';
 import { PrimaryButton } from '@/features/onboarding/PrimaryButton';
 
 // Placeholder garden — M4 builds the real multi-track garden with per-track blooms.
@@ -33,5 +33,5 @@ const styles = StyleSheet.create({
   hero: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: Spacing.three },
   bloom: { fontSize: 72 },
   body: { textAlign: 'center', lineHeight: 22 },
-  actions: { paddingBottom: Spacing.five },
+  actions: { paddingBottom: BottomTabInset + Spacing.four },
 });
