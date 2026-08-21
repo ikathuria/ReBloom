@@ -12,6 +12,7 @@ import { PrimaryButton } from '@/features/onboarding/PrimaryButton';
 import { BLOOM } from '@/features/onboarding/copy';
 import { BloomVisual } from '@/features/garden/BloomVisual';
 import { canScan, scanBlockReason } from '@/features/privacy/consent';
+import { HAIR_TREND, NOT_MEDICAL, PHOTO_PROMISE } from '@/features/privacy/disclaimer';
 import { getHairAnalyzer } from '@/lib/analysis';
 import { getDb } from '@/lib/db';
 import { scanGate, useTier, type ScanGate } from '@/lib/purchases';
@@ -104,10 +105,10 @@ export default function ScanHairScreen() {
                 <ThemedText type="title">Check your hair</ThemedText>
                 <ThemedText type="default" themeColor="textSecondary" style={styles.body}>
                   Part your hair and hold the camera above, looking down at your scalp, in bright even
-                  light. Try the same spot each time. Hair grows slowly — a monthly check is plenty.
+                  light. Try the same spot each time. Hair grows slowly — a monthly check is plenty. {PHOTO_PROMISE}
                 </ThemedText>
                 <ThemedText type="small" themeColor="textSecondary" style={styles.body}>
-                  This is a coarse month-to-month trend — not a follicle count, not a diagnosis.
+                  {HAIR_TREND} {NOT_MEDICAL}
                 </ThemedText>
               </View>
               <View style={styles.actions}>
@@ -134,6 +135,9 @@ export default function ScanHairScreen() {
                 <BloomVisual bloom={result.bloom} hero />
                 <ThemedText type="default" themeColor="textSecondary" style={styles.center}>
                   Gentle and slow is the goal. See you next month.
+                </ThemedText>
+                <ThemedText type="small" themeColor="textSecondary" style={styles.center}>
+                  {NOT_MEDICAL}
                 </ThemedText>
               </View>
               <View style={styles.actions}>

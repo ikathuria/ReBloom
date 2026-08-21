@@ -295,11 +295,11 @@ Tasks:
 **Goal:** Defensibly private and ready for App Store health/biometric review.
 
 Tasks:
-- [ ] Data export + delete in `features/privacy` (export all track data; delete all local + synced data) — Done when: export produces a file and delete wipes local DB + remote rows (test covers both)
-- [ ] iOS privacy manifest + third-party SDK declarations (Perfect Corp network use, RevenueCat); Info.plist camera usage string; Android data-safety notes — Done when: `eas build` produces a build with the manifest present
-- [ ] In-app privacy promise + "not medical, not detection, not monitoring" disclaimers on every scan surface (skin, hair), each track's results, and apparel — Done when: disclaimers visible on each surface; copy reviewed against Risks
-- [ ] Audit: no image persisted server-side, no advertising IDs / extraneous permissions (contrast Loosid/Sober Grid) — Done when: `docs/02-privacy-and-consent.md` audit checklist all ticked
-- [ ] Gate: lint, typecheck, test pass — Done when: all green locally
+- [x] Data export + delete in `features/privacy` — **Done + tested:** `buildExport`/`serializeExport` gather consent + enrollments + every scan point (never a photo) to JSON, shared via RN core `Share` (no native rebuild); `deleteAllData` wipes the local DB and, when signed in, the synced copy (`deleteCloudData` → cloud rows, then `clearAll`, then sign-out). Cloud-first ordering so a mid-way failure never strands a cloud copy. Wired into the Account screen; 4 unit tests (`dataRights.test.ts`).
+- [~] iOS privacy manifest + third-party SDK declarations; Info.plist camera usage string — **Declared, build-verify at M10:** `app.json` `ios.privacyManifests` (no tracking, empty tracking domains; email + other-data for app-functionality only; required-reason APIs UserDefaults `CA92.1` + FileTimestamp `C617.1`) + explicit `NSCameraUsageDescription`/`NSPhotoLibraryUsageDescription`. Emission to `PrivacyInfo.xcprivacy` + reconciliation with the SDKs' own bundled manifests (Perfect Corp/op-sqlite/RevenueCat) happens at the EAS build (M10); Android data-safety notes deferred to submit.
+- [x] "Not medical, not detection, not monitoring" disclaimers on every scan surface + results + apparel — **Done:** one shared constant (`features/privacy/disclaimer.NOT_MEDICAL`, plus `PHOTO_PROMISE` + `HAIR_TREND`) now renders identically on consent, both scan screens (idle **and** result), each track's results, and the Comfort tab.
+- [x] Audit: no image persisted server-side, no ad IDs / extraneous permissions (contrast Loosid/Sober Grid) — **Done:** `docs/02` audit checklist worked through — image-never-stored path re-asserted, encrypted-at-rest confirmed, no ad/location/contacts/BT permissions, manifest tracking=false. One item left `[~]` (manifest emission verified at the M10 build).
+- [x] Gate: lint, typecheck, test pass — **Done:** 60 tests green (+4), typecheck + lint clean; `app.json` valid; full iOS Metro bundle builds.
 
 ### Milestone 10: Deploy (TestFlight / internal track)
 **Goal:** Real builds in testers' hands, error monitoring live.

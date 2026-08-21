@@ -9,6 +9,7 @@ import { useTheme } from '@/hooks/use-theme';
 import { BLOOM } from '@/features/onboarding/copy';
 import { PrimaryButton } from '@/features/onboarding/PrimaryButton';
 import { type FabricTip, recommendFabrics } from '@/lib/apparel/recommend';
+import { NOT_MEDICAL } from '@/features/privacy/disclaimer';
 import { canUseTryOn, useTier } from '@/lib/purchases';
 import { useApparel } from './useApparel';
 
@@ -80,7 +81,7 @@ export default function ApparelScreen() {
                 </View>
 
                 <ThemedText type="small" themeColor="textSecondary" style={styles.disclaimer}>
-                  Comfort suggestions to help sensitive skin — not medical advice.
+                  Comfort suggestions to help sensitive skin. {NOT_MEDICAL}
                 </ThemedText>
               </>
             );

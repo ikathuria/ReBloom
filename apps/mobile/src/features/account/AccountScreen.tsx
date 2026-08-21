@@ -1,6 +1,6 @@
 import { router } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { Pressable, StyleSheet, Switch, TextInput, View } from 'react-native';
+import { Alert, Pressable, Share, StyleSheet, Switch, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { ThemedText } from '@/components/themed-text';
@@ -9,9 +9,17 @@ import { Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 import { BLOOM } from '@/features/onboarding/copy';
 import { PrimaryButton } from '@/features/onboarding/PrimaryButton';
+import {
+  buildExport,
+  deleteAllData,
+  NOT_MEDICAL,
+  serializeExport,
+} from '@/features/privacy';
 import { getDb } from '@/lib/db';
 import {
+  deleteCloudData,
   getSupabase,
+  isSupabaseConfigured,
   isSyncEnabled,
   pushToCloud,
   setSyncEnabled,
@@ -42,6 +50,8 @@ export default function AccountScreen() {
           ) : (
             <SignedOut />
           )}
+
+          <DataRights signedIn={Boolean(auth.session)} />
         </View>
       </SafeAreaView>
     </ThemedView>
@@ -148,6 +158,65 @@ function SignedIn({ email }: { email: string | null }) {
   );
 }
 
+function DataRights({ signedIn }: { signedIn: boolean }) {
+  const theme = useTheme();
+  const [busy, setBusy] = useState(false);
+
+  async function exportData() {
+    setBusy(true);
+    try {
+      const db = await getDb();
+      const json = serializeExport(await buildExport(db));
+      await Share.share({ title: 'My ReBloom data', message: json });
+    } catch {
+      // Share was dismissed or failed — nothing to persist, safe to ignore.
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  function confirmDelete() {
+    Alert.alert(
+      'Delete everything?',
+      `This erases every journey and scan on this device${
+        signedIn ? ' and any synced copy in your account' : ''
+      }. This can’t be undone.`,
+      [
+        { text: 'Cancel', style: 'cancel' },
+        { text: 'Delete everything', style: 'destructive', onPress: deleteEverything },
+      ],
+    );
+  }
+
+  async function deleteEverything() {
+    setBusy(true);
+    try {
+      const db = await getDb();
+      const cloud =
+        signedIn && isSupabaseConfigured ? () => deleteCloudData(db, getSupabase()) : undefined;
+      await deleteAllData(db, cloud);
+      if (signedIn && isSupabaseConfigured) await signOut();
+      router.replace('/'); // local is wiped → the first-run gate takes over
+    } catch {
+      setBusy(false);
+      Alert.alert('That didn’t finish', 'Some data may remain. Please try again.');
+    }
+  }
+
+  return (
+    <View style={styles.dataRights}>
+      <ThemedText type="smallBold">Your data</ThemedText>
+      <ThemedText type="small" themeColor="textSecondary" style={styles.p}>
+        Take everything with you, or erase it completely. {NOT_MEDICAL}
+      </ThemedText>
+      <PrimaryButton testID="data-export" label={busy ? 'Working…' : 'Export my data'} variant="secondary" onPress={exportData} disabled={busy} />
+      <Pressable testID="data-delete" onPress={confirmDelete} disabled={busy} accessibilityRole="button" style={styles.deleteBtn}>
+        <ThemedText style={[styles.deleteText, { color: theme.text }]}>Delete everything</ThemedText>
+      </Pressable>
+    </View>
+  );
+}
+
 const styles = StyleSheet.create({
   fill: { flex: 1 },
   back: { paddingHorizontal: Spacing.four, paddingVertical: Spacing.two },
@@ -160,4 +229,7 @@ const styles = StyleSheet.create({
   rowText: { flex: 1, gap: 2 },
   linkBtn: { alignSelf: 'flex-start', paddingVertical: Spacing.two },
   linkText: { fontSize: 16, fontWeight: '700' },
+  dataRights: { marginTop: Spacing.five, gap: Spacing.two },
+  deleteBtn: { alignSelf: 'center', paddingVertical: Spacing.two },
+  deleteText: { fontSize: 15, fontWeight: '700', opacity: 0.7 },
 });

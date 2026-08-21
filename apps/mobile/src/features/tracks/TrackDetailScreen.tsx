@@ -9,6 +9,7 @@ import { useTheme } from '@/hooks/use-theme';
 import { BLOOM } from '@/features/onboarding/copy';
 import { PrimaryButton } from '@/features/onboarding/PrimaryButton';
 import { BloomVisual } from '@/features/garden/BloomVisual';
+import { HAIR_TREND, NOT_MEDICAL } from '@/features/privacy/disclaimer';
 import { concernLabel } from '@/lib/tracks/concernLabels';
 import { TRACKS_META, isTrackId } from '@/lib/tracks';
 import { useTrackHistory } from './useTrackHistory';
@@ -64,9 +65,7 @@ export default function TrackDetailScreen() {
               </Section>
 
               <ThemedText type="small" themeColor="textSecondary" style={styles.disclaimer}>
-                {isHair
-                  ? 'A coarse month-to-month trend — not a follicle count, not a diagnosis.'
-                  : 'A gentle trend to encourage you — not medical advice, not a diagnosis.'}
+                {isHair ? `${HAIR_TREND} ${NOT_MEDICAL}` : NOT_MEDICAL}
               </ThemedText>
 
               {isHair && (

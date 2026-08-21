@@ -59,3 +59,22 @@ export async function pushToCloud(db: ReBloomDb, supabase: SupabaseClient): Prom
 
   return { synced: true, enrollments: enrollments.length, points: rows.length };
 }
+
+/**
+ * Delete the signed-in user's synced copy (both cloud tables) and turn sync off. No-op when
+ * signed out. RLS already scopes deletes to the owner; we filter by user_id explicitly too.
+ */
+export async function deleteCloudData(db: ReBloomDb, supabase: SupabaseClient): Promise<void> {
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
+  if (!session) return;
+  const userId = session.user.id;
+
+  const points = await supabase.from('track_points').delete().eq('user_id', userId);
+  if (points.error) throw points.error;
+  const enrollments = await supabase.from('enrollments').delete().eq('user_id', userId);
+  if (enrollments.error) throw enrollments.error;
+
+  await setSyncEnabled(db, false);
+}

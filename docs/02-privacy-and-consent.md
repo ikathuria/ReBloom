@@ -38,12 +38,12 @@ Each toggle states, in plain language, what it enables and what happens if you d
 
 The **Recovery Healing** track is flagged `sensitive`. It carries the same technical guarantees as every track (nothing extra is collected), plus extra framing care: no language implying detection of use, and reinforced "this is encouragement, not surveillance" copy.
 
-## Pre-submit audit checklist (verified in M9)
+## Pre-submit audit checklist (M9)
 
-- [ ] No scan image is written to disk on the device beyond the transient in-memory buffer, and none is persisted server-side (proxy asserts no storage).
-- [ ] Local DB is encrypted at rest (SQLCipher) with the key in the platform keychain, not in JS/AsyncStorage.
-- [ ] No advertising ID, IDFA/IMEI/IMSI, location, contacts, or Bluetooth permissions requested.
-- [ ] Cloud sync is off until explicitly enabled; disabling it stops all uploads.
-- [ ] Export produces the user's full data; delete wipes local + synced copies.
-- [ ] iOS privacy manifest + third-party SDK (Perfect Corp, RevenueCat) data-use declarations present and accurate.
-- [ ] "Not medical / not detection / not monitoring" disclaimer visible on consent, every scan surface, each track's results, and apparel.
+- [x] **No scan image is written to disk** beyond the transient in-memory buffer, and none is persisted server-side. The client holds the photo as an in-memory base64 string, passes it to the proxy, and drops it; the Edge Functions stream the bytes to YouCam and never write them (`analyze-skin`/`analyze-hair` keep only the returned scores). No `writeAsync`/file save anywhere in the scan path.
+- [x] **Local DB encrypted at rest** (op-sqlite + SQLCipher) with the key in the iOS Keychain / Android Keystore via expo-secure-store — never in JS or AsyncStorage (M2). The Supabase auth session is likewise Keychain-stored (M7), not AsyncStorage.
+- [x] **No advertising ID, IDFA/IMEI/IMSI, location, contacts, or Bluetooth** requested. Permissions are camera + photo library only. The iOS privacy manifest declares `NSPrivacyTracking: false` with empty tracking domains (contrast Loosid/Sober Grid).
+- [x] **Cloud sync off until explicitly enabled**; disabling stops uploads (M7). One-way, opt-in, gated on the toggle **and** a session.
+- [x] **Export + delete implemented** (M9). Export gathers consent + enrollments + every scan point (never a photo) to shareable JSON; delete wipes the local DB and, when signed in, the synced copy (cloud rows deleted, then local `clearAll`, then sign-out). Both are unit-tested (`features/privacy/dataRights.test.ts`).
+- [~] **iOS privacy manifest + third-party SDK declarations** — the app's own manifest is declared in `app.json` (`ios.privacyManifests`: no tracking; email + other-data collected only for app functionality, unlinked to tracking; required-reason APIs UserDefaults `CA92.1` + FileTimestamp `C617.1`). **To finish at the EAS build (M10):** confirm it emits to `PrivacyInfo.xcprivacy`, and reconcile against the manifests bundled by Perfect Corp/op-sqlite/RevenueCat once those SDKs are in a real build. Also set `ITSAppUsesNonExemptEncryption` correctly for SQLCipher at submit.
+- [x] **"Not medical / not detection / not monitoring" disclaimer visible** on consent (onboarding footer) and — via one shared constant (`features/privacy/disclaimer.NOT_MEDICAL`) — on both scan screens (idle + result), each track's results, and the apparel tab.

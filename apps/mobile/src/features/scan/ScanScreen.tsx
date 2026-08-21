@@ -11,6 +11,7 @@ import { useTheme } from '@/hooks/use-theme';
 import { PrimaryButton } from '@/features/onboarding/PrimaryButton';
 import { BLOOM } from '@/features/onboarding/copy';
 import { canScan, scanBlockReason } from '@/features/privacy/consent';
+import { NOT_MEDICAL, PHOTO_PROMISE } from '@/features/privacy/disclaimer';
 import { getAnalysisProvider } from '@/lib/analysis';
 import { getDb } from '@/lib/db';
 import { scanGate, useTier, type ScanGate } from '@/lib/purchases';
@@ -123,9 +124,7 @@ export default function ScanScreen() {
               <View style={styles.header}>
                 <ThemedText type="title">Take a scan</ThemedText>
                 <ThemedText type="default" themeColor="textSecondary" style={styles.body}>
-                  A clear, front-facing photo in soft, even light works best. This is an encouraging
-                  trend — not medical advice, not a diagnosis. Your photo is analyzed once and never
-                  stored.
+                  A clear, front-facing photo in soft, even light works best. {NOT_MEDICAL} {PHOTO_PROMISE}
                 </ThemedText>
               </View>
               <View style={styles.actions}>
@@ -159,6 +158,9 @@ export default function ScanScreen() {
                   ))
                 )}
               </View>
+              <ThemedText type="small" themeColor="textSecondary" style={styles.center}>
+                {NOT_MEDICAL}
+              </ThemedText>
               <View style={styles.actions}>
                 <PrimaryButton testID="scan-done" label="Back to garden" onPress={() => router.back()} />
               </View>
