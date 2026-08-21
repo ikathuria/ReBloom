@@ -143,7 +143,7 @@ The SDK 57 default template uses a `src/`-rooted layout (not `app/` at repo root
 |---|---|---|
 | 0. Spike (scan path + track fan-out on free units) | ✅ **GO** (2026-08-12) | Live: REST flow works, no native SDK; one scan → Recovery 81 / Acne 77; **16 units/8-concern HD scan**. Hair endpoint deferred to M5 |
 | 1. Scaffold | ✅ **done** (2026-08-12) | Expo SDK 57 app; structure + placeholders; jest-expo (3 tests) + ESLint + Prettier + strict TS; CI workflow (green on push `22479ae`); `expo-doctor` 21/21 |
-| 2. Consent + track picker + encrypted store | ◐ in progress | ✅ privacy doc; consent + enrollment logic; onboarding UI + first-run gate; **op-sqlite/SQLCipher encrypted driver wired** (21 tests, expo-doctor 21/21). ⏳ runtime-verify on an iOS dev build (blocked on user installing Xcode) |
+| 2. Consent + track picker + encrypted store | ✅ **done** (verified on iOS) | Onboarding→consent→journeys→garden + SQLCipher persistence across a cold relaunch, driven on iPhone 17 Pro (iOS 26.5). 21 tests, expo-doctor 21/21. Known cosmetic: tab bar shows during onboarding (routing pass) |
 | 2. Consent-first onboarding + track selection + encrypted store | ☐ todo | |
 | 3. Core: track registry + skin scan → fan-out to tracks | ☐ todo | heart; use supabase skill |
 | 4. Garden home + per-track dashboards | ☐ todo | |
@@ -155,8 +155,8 @@ The SDK 57 default template uses a `src/`-rooted layout (not `app/` at repo root
 | 10. Deploy (TestFlight / internal) | ☐ todo | |
 | 11. Polish | ☐ todo | |
 
-**In progress now:** Milestone 2 nearly done — privacy doc, consent + enrollment logic, onboarding UI + first-run gate, and the op-sqlite/SQLCipher encrypted store are all code-complete (21 tests, expo-doctor 21/21). Open item: **runtime-verify the encrypted store on an iOS dev build** (blocked on the full-Xcode install).
-**Next up:** once Xcode is installed → `npx expo prebuild --clean` + `npx expo run:ios`; verify onboarding→garden + encrypted persistence across a restart; then Milestone 3 (scan → analyze → fan-out).
+**In progress now:** Milestone 2 **complete and verified on a real iOS build** (iPhone 17 Pro, iOS 26.5): onboarding→consent→journeys→garden works, and the SQLCipher-encrypted store persists across a cold relaunch. Local iOS build pipeline is set up (Xcode 26.6 + CocoaPods; `npm run ios`). One known cosmetic issue: the template tab bar shows during onboarding — fix with a routing pass.
+**Next up:** Milestone 3 — scan (camera or photo-library) → `analyze-skin` Edge Function proxy → fan-out to enrolled skin tracks → store encrypted `track_point`s. (Optionally first: a small routing pass to make onboarding full-screen.)
 **Convention note:** env var for the YouCam key is `PERFECTCORP_API_KEY` (per `.env.example`); the local `.env` currently uses `PERFECT_CORP_API` — align these before wiring the Edge Function in M3.
 
 ---
