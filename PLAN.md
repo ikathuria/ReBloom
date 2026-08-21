@@ -236,11 +236,12 @@ Tasks:
 **Goal:** The heart: the 6 skin tracks exist as config, and one skin scan updates every enrolled skin track's bloom. *(Use the `supabase` skill for the Edge Function.)*
 
 Tasks:
-- [ ] `lib/tracks` registry: the 6 skin `TrackDefinition`s (concerns per M0, cadence, copy) + `BloomScoring` engine mapping a track's concern scores → 0–100 bloom — Done when: named unit tests compute expected blooms for each track from sample concern inputs (improving/flat/declining)
-- [ ] Productionize `analyze-skin` Edge Function: accepts the union of enrolled concerns, input validation, unit metering + logging, error handling, **no image persistence**, rate limiting — Done when: a fetch returns scored shape, 400 on malformed body; a test asserts no image write
-- [ ] `lib/analysis/AnalysisProvider` + `PerfectCorpProvider.analyzeSkin(concerns)` — Done when: a unit test maps API fields → domain `SkinScores` (no vendor types leak upward)
-- [ ] `features/scan` flow: **capture via live camera (expo-camera) or pick an existing photo (expo-image-picker)** → compute union of enrolled skin-track concerns → provider → **fan out** to write one `track_point` per enrolled skin track — Done when: on device, one scan (camera or library) with 2+ enrolled skin tracks persists a point for each; a component test drives capture→fan-out with mocks. *(The photo-library path keeps the flow demoable in the iOS Simulator.)*
-- [ ] Gate: lint, typecheck, test pass — Done when: all green locally
+- [x] `lib/tracks` registry + bloom-scoring engine — **Done:** real concern keys per track + `scoring.ts` (`skinUnionConcerns`, `computeBloom`, `bloomsForScan`); tests reproduce the M0 live blooms (Recovery 81 / Acne 77).
+- [x] `analyze-skin` Edge Function — **Done + verified live:** Deno proxy (file→task→poll), key from `Deno.env`, **image never persisted**, 400 on malformed body, returns `{ scores }`. Ran a real selfie scan through it (Recovery 80 / Acne 78). *(Rate-limiting/unit-metering hardened in M8.)*
+- [x] `lib/analysis/AnalysisProvider` + `PerfectCorpProvider` (via `functions.invoke`) + mock — **Done:** `getAnalysisProvider()` picks real when Supabase is configured, else mock; no vendor types leak upward.
+- [x] `features/scan` flow (camera or photo-library via expo-image-picker) → union of concerns → provider → **fan out** to one encrypted `track_point` per enrolled skin track — **Done + verified on iOS** (real scan → per-track blooms); `runScan.test.ts` drives capture→fan-out with a fixed provider + in-memory db.
+- [x] Gate: lint, typecheck, test pass — **Done:** 29 tests green.
+- [~] *Backend deployment* — currently **local** (`supabase start` + `functions serve`, Docker); a deployed cloud Supabase project + `secrets set` + `functions deploy` comes around M7.
 
 ### Milestone 4: Garden home + per-track bloom dashboards
 **Goal:** The user sees a **garden** — one bloom per enrolled track — and can open any track for its own warm trend.

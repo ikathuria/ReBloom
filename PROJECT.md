@@ -144,7 +144,7 @@ The SDK 57 default template uses a `src/`-rooted layout (not `app/` at repo root
 | 0. Spike (scan path + track fan-out on free units) | ✅ **GO** (2026-08-12) | Live: REST flow works, no native SDK; one scan → Recovery 81 / Acne 77; **16 units/8-concern HD scan**. Hair endpoint deferred to M5 |
 | 1. Scaffold | ✅ **done** (2026-08-12) | Expo SDK 57 app; structure + placeholders; jest-expo (3 tests) + ESLint + Prettier + strict TS; CI workflow (green on push `22479ae`); `expo-doctor` 21/21 |
 | 2. Consent + track picker + encrypted store | ✅ **done** (verified on iOS) | Full-screen onboarding→consent→journeys→garden + SQLCipher persistence across a cold relaunch, driven on iPhone 17 Pro (iOS 26.5). 22 tests, expo-doctor 21/21 |
-| 3. Core: track registry + skin scan → fan-out to tracks | ◐ in progress | ✅ concern registry + bloom-scoring engine; scan UI (camera/photo-library) → **mock** analyze → fan-out → encrypted track_points, **verified on iOS** (one photo → Recovery 79/Acne 75). ⏳ real `analyze-skin` Edge Function (needs Supabase) |
+| 3. Core: track registry + skin scan → fan-out to tracks | ✅ **done** (verified real on iOS) | concern registry + bloom engine; scan UI (camera/photo-library) → `analyze-skin` Edge Function → **real YouCam** → fan-out → encrypted track_points. Drove a real selfie scan on iPhone 17 Pro: Recovery 80 / Acne 78, key server-side |
 | 4. Garden home + per-track dashboards | ☐ todo | |
 | 5. Hair Regrowth track (scalp capture) | ☐ todo | reuses M3 engine; **deferrable to fast-follow** |
 | 6. Apparel suggestion module (VTO) | ☐ todo | |
@@ -154,8 +154,8 @@ The SDK 57 default template uses a `src/`-rooted layout (not `app/` at repo root
 | 10. Deploy (TestFlight / internal) | ☐ todo | |
 | 11. Polish | ☐ todo | |
 
-**In progress now:** Milestone 2 **complete and verified on a real iOS build** (iPhone 17 Pro, iOS 26.5): onboarding→consent→journeys→garden works, and the SQLCipher-encrypted store persists across a cold relaunch. Local iOS build pipeline is set up (Xcode 26.6 + CocoaPods; `npm run ios`). One known cosmetic issue: the template tab bar shows during onboarding — fix with a routing pass.
-**Next up:** Milestone 3 — scan (camera or photo-library) → `analyze-skin` Edge Function proxy → fan-out to enrolled skin tracks → store encrypted `track_point`s. (Optionally first: a small routing pass to make onboarding full-screen.)
+**In progress now:** Milestones 0–3 **complete and verified on iOS**. M3 closed with a **real** end-to-end scan on iPhone 17 Pro: selfie → `analyze-skin` Edge Function (local Supabase, Docker) → real YouCam scores → fan-out to blooms (Recovery 80 / Acne 78), API key server-side. The app auto-selects the real provider when `EXPO_PUBLIC_SUPABASE_URL` is set, else the mock. Local backend runs via `supabase start` + `supabase functions serve` (key in gitignored `supabase/functions/.env`).
+**Next up:** Milestone 4 — the real **garden**: per-track blooms on the home screen + per-track trend view (victory-native) reading the stored `track_point`s. Then M5 (hair), M6 (apparel), M7 (auth + opt-in sync — also where the Edge Function moves from local to a deployed cloud Supabase project). Local dev reminder: `supabase start` + `supabase functions serve` must be running for real scans; `PERFECTCORP_API_KEY` lives in `supabase/functions/.env`.
 **Convention note:** env var for the YouCam key is `PERFECTCORP_API_KEY` (per `.env.example`); the local `.env` currently uses `PERFECT_CORP_API` — align these before wiring the Edge Function in M3.
 
 ---
@@ -171,6 +171,7 @@ Append-only. One line per decision that changed direction, with the why.
 - 2026-08-12 — Free tier caps usage below per-scan cost; payments via RevenueCat (Apple/Google require IAP) — monetization + feasibility.
 - 2026-08-12 — **Track concerns separately** → multi-track model with 7 launch tracks, each its own bloom; tracks are config (`TrackDefinition`), so new ones are data not code; one skin scan feeds all enrolled skin tracks (union of concerns) — user request.
 - 2026-08-12 — **Positioning = general "visible healing" tracker** (not recovery-only); drug recovery is one first-class track among peers — bigger market, but competing with crowded skin/acne/hair apps, so the wedge is multi-track + privacy + the underserved recovery track — user decision.
+- 2026-08-12 — Backend runs **locally first** (`supabase start` + `supabase functions serve`, Docker) — no cloud account yet; moves to a deployed cloud Supabase project around M7. Client picks real-vs-mock provider via `isSupabaseConfigured` (`EXPO_PUBLIC_SUPABASE_URL`). Scan sends the image as **base64** in the function body (picker `base64:true`) to avoid a native file-system module + rebuild.
 - 2026-08-12 — Dev environment has **Command-Line-Tools only, no Xcode/CocoaPods/simulator** → cannot build/boot iOS here. User is installing full Xcode; iOS builds via local `expo run:ios`. op-sqlite (native) breaks Expo Go, so `createDb()` falls back to in-memory in Expo Go/jest/web to stay runnable everywhere until the dev build.
 
 ---
