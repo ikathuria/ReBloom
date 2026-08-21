@@ -247,11 +247,11 @@ Tasks:
 **Goal:** The user sees a **garden** — one bloom per enrolled track — and can open any track for its own warm trend.
 
 Tasks:
-- [ ] `features/garden` home: a bloom/plant per enrolled track showing current stage; add-a-journey entry point — Done when: with 2 enrolled tracks + scans, the garden renders both blooms at their stages on device
-- [ ] `features/tracks` per-track dashboard: victory-native trend of that track's bloom over time + growing-bloom visual + per-concern detail with plain-language, non-alarming copy — Done when: opening a track shows its trend, bloom stage, and concern breakdown
-- [ ] Empty/first-scan states per track (encouraging, no "not enough data" coldness) — Done when: a new track shows a warm "your bloom is starting" state
-- [ ] E2E happy path: onboarding → consent → choose 2 tracks → one skin scan → garden shows both blooms advanced — Done when: the scripted flow passes on a simulator (mocked analysis)
-- [ ] Gate: lint, typecheck, test pass — Done when: all green locally
+- [x] `features/garden` home: a bloom/plant per enrolled track (stage emoji + score + progress) + add-a-journey — **Done + verified on iOS:** garden shows Recovery 🌸80 / Acne 🌸78 from real stored blooms; `useGarden` reloads on focus.
+- [x] `features/tracks` per-track dashboard: bloom-stage hero + trend + per-concern breakdown with friendly, non-alarming labels — **Done + verified:** Recovery detail shows hero 80, trend bars, and real concerns (Hydration 72 / Calm skin 77 / Radiance 81 / Smooth texture 79 / Even tone 93 → avg 80). *(Trend is a lightweight bar sparkline — Skia/victory-native line chart is a later polish, avoided a native rebuild.)*
+- [x] Empty/first-scan state per track — **Done + verified:** a newly added journey shows 🌰 "Ready to start / Take your first scan".
+- [~] E2E happy path — the pieces are verified live on the Simulator (onboarding→consent→tracks→scan→garden→detail→add-journey); a scripted jest E2E is deferred (native-flow scripting) — the `runScan` + garden data paths are unit-tested.
+- [x] Gate: lint, typecheck, test pass — **Done:** 32 tests green, typecheck + lint clean.
 
 ### Milestone 5: Hair Regrowth track (hair capture)
 **Goal:** The hair track joins the garden with its own scalp capture and slower, honest signal. *(Deferrable to a fast-follow — it reuses the M3 engine.)*

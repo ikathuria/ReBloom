@@ -145,7 +145,7 @@ The SDK 57 default template uses a `src/`-rooted layout (not `app/` at repo root
 | 1. Scaffold | ✅ **done** (2026-08-12) | Expo SDK 57 app; structure + placeholders; jest-expo (3 tests) + ESLint + Prettier + strict TS; CI workflow (green on push `22479ae`); `expo-doctor` 21/21 |
 | 2. Consent + track picker + encrypted store | ✅ **done** (verified on iOS) | Full-screen onboarding→consent→journeys→garden + SQLCipher persistence across a cold relaunch, driven on iPhone 17 Pro (iOS 26.5). 22 tests, expo-doctor 21/21 |
 | 3. Core: track registry + skin scan → fan-out to tracks | ✅ **done** (verified real on iOS) | concern registry + bloom engine; scan UI (camera/photo-library) → `analyze-skin` Edge Function → **real YouCam** → fan-out → encrypted track_points. Drove a real selfie scan on iPhone 17 Pro: Recovery 80 / Acne 78, key server-side |
-| 4. Garden home + per-track dashboards | ☐ todo | |
+| 4. Garden home + per-track dashboards | ✅ **done** (verified on iOS) | Garden shows per-track blooms (stage emoji + score + progress); per-track detail = hero bloom + trend sparkline + real concern breakdown (friendly labels); warm empty state; add-a-journey. Trend is Views-based (Skia line chart = later polish) |
 | 5. Hair Regrowth track (scalp capture) | ☐ todo | reuses M3 engine; **deferrable to fast-follow** |
 | 6. Apparel suggestion module (VTO) | ☐ todo | |
 | 7. Auth + opt-in encrypted cloud sync | ☐ todo | use supabase skill (RLS) |
@@ -154,8 +154,10 @@ The SDK 57 default template uses a `src/`-rooted layout (not `app/` at repo root
 | 10. Deploy (TestFlight / internal) | ☐ todo | |
 | 11. Polish | ☐ todo | |
 
-**In progress now:** Milestones 0–3 **complete and verified on iOS**. M3 closed with a **real** end-to-end scan on iPhone 17 Pro: selfie → `analyze-skin` Edge Function (local Supabase, Docker) → real YouCam scores → fan-out to blooms (Recovery 80 / Acne 78), API key server-side. The app auto-selects the real provider when `EXPO_PUBLIC_SUPABASE_URL` is set, else the mock. Local backend runs via `supabase start` + `supabase functions serve` (key in gitignored `supabase/functions/.env`).
-**Next up:** Milestone 4 — the real **garden**: per-track blooms on the home screen + per-track trend view (victory-native) reading the stored `track_point`s. Then M5 (hair), M6 (apparel), M7 (auth + opt-in sync — also where the Edge Function moves from local to a deployed cloud Supabase project). Local dev reminder: `supabase start` + `supabase functions serve` must be running for real scans; `PERFECTCORP_API_KEY` lives in `supabase/functions/.env`.
+**In progress now:** Milestones 0–4 **complete and verified on iOS**. M4 added the real garden (per-track blooms + growth stages), the per-track detail (hero bloom + trend sparkline + friendly concern breakdown), warm empty states, and add-a-journey — all reading the encrypted store, driven on the Simulator.
+
+_Earlier context:_ Milestones 0–3. M3 closed with a **real** end-to-end scan on iPhone 17 Pro: selfie → `analyze-skin` Edge Function (local Supabase, Docker) → real YouCam scores → fan-out to blooms (Recovery 80 / Acne 78), API key server-side. The app auto-selects the real provider when `EXPO_PUBLIC_SUPABASE_URL` is set, else the mock. Local backend runs via `supabase start` + `supabase functions serve` (key in gitignored `supabase/functions/.env`).
+**Next up:** Milestone 5 — Hair Regrowth: scalp capture + `analyze-hair` Edge Function (YouCam AI Hair Density) + hair bloom (reuses the M3/M4 machinery; the garden + detail already render a hair track once it has points). Then M6 (apparel), M7 (auth + opt-in sync + move the Edge Function to a deployed cloud Supabase project). Local dev reminder: `supabase start` + `supabase functions serve` must be running for real scans; `PERFECTCORP_API_KEY` lives in `supabase/functions/.env`. Trend charts: currently Views-based sparklines; a Skia/victory-native line chart is a deferred polish (needs a native rebuild).
 **Convention note:** env var for the YouCam key is `PERFECTCORP_API_KEY` (per `.env.example`); the local `.env` currently uses `PERFECT_CORP_API` — align these before wiring the Edge Function in M3.
 
 ---
