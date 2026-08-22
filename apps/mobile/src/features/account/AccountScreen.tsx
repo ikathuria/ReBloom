@@ -10,7 +10,8 @@ import { useColorScheme } from '@/hooks/use-color-scheme';
 import { useTheme } from '@/hooks/use-theme';
 import { BLOOM } from '@/features/onboarding/copy';
 import { PrimaryButton } from '@/features/onboarding/PrimaryButton';
-import { SKINS, SKIN_IDS, useSkin } from '@/lib/skins';
+import { canCustomizeEmojis, useTier } from '@/lib/purchases';
+import { EMOJI_PALETTE, SKINS, SKIN_IDS, STAGE_LABELS, STAGE_ORDER, useSkin, type StageKey } from '@/lib/skins';
 import {
   buildExport,
   deleteAllData,
@@ -172,7 +173,9 @@ function Appearance() {
   const theme = useTheme();
   const scheme = useColorScheme();
   const dark = scheme === 'dark';
-  const { skinId, setSkin } = useSkin();
+  const { tier } = useTier();
+  const pro = canCustomizeEmojis(tier);
+  const { skin, skinId, setSkin, customEmoji, setCustomEmoji } = useSkin();
 
   return (
     <View style={styles.appearance}>
@@ -184,29 +187,32 @@ function Appearance() {
         {SKIN_IDS.map((id) => {
           const s = SKINS[id];
           const selected = id === skinId;
+          const locked = id === 'custom' && !pro;
           // A tiny growth preview in this skin's own colors, so the card sells the vibe.
           const preview = s.hues[dark ? 'dark' : 'light'].recovery;
+          // For the Custom card, preview the user's own picks.
+          const pv = id === 'custom' ? customEmoji : s.stageEmoji;
           return (
             <Pressable
               key={id}
               testID={`skin-${id}`}
-              onPress={() => setSkin(id)}
+              onPress={() => (locked ? router.push('/paywall') : setSkin(id))}
               accessibilityRole="radio"
               accessibilityState={{ selected }}
-              accessibilityLabel={`${s.name} garden style`}
+              accessibilityLabel={`${s.name} garden style${locked ? ', Pro' : ''}`}
               style={[
                 styles.skinCard,
                 { backgroundColor: preview.bg, borderColor: selected ? BLOOM : 'transparent' },
               ]}
             >
               <ThemedText style={styles.skinEmojis}>
-                {s.stageEmoji.sprout}
-                {s.stageEmoji.bloom}
-                {s.stageEmoji.full}
+                {pv.sprout}
+                {pv.bloom}
+                {pv.full}
               </ThemedText>
               <ThemedText style={[styles.skinName, { color: preview.ink }]}>{s.name}</ThemedText>
               <ThemedText style={[styles.skinBlurb, { color: preview.ink }]} numberOfLines={2}>
-                {s.blurb}
+                {locked ? '🔒 Pro' : s.blurb}
               </ThemedText>
               <View style={[styles.skinCheck, { borderColor: selected ? BLOOM : theme.line }, selected && { backgroundColor: BLOOM }]}>
                 {selected ? <ThemedText style={styles.skinTick}>✓</ThemedText> : null}
@@ -214,6 +220,69 @@ function Appearance() {
             </Pressable>
           );
         })}
+      </View>
+
+      {skinId === 'custom' && pro && (
+        <EmojiEditor customEmoji={customEmoji} onPick={setCustomEmoji} accent={skin.hues[dark ? 'dark' : 'light'].recovery.ink} />
+      )}
+    </View>
+  );
+}
+
+function EmojiEditor({
+  customEmoji,
+  onPick,
+  accent,
+}: {
+  customEmoji: Record<StageKey, string>;
+  onPick: (stage: StageKey, emoji: string) => void;
+  accent: string;
+}) {
+  const theme = useTheme();
+  const [focused, setFocused] = useState<StageKey>('bloom');
+
+  return (
+    <View style={[styles.editor, { backgroundColor: theme.card, borderColor: theme.line }]}>
+      <ThemedText type="smallBold">Your growth emojis</ThemedText>
+      <ThemedText type="small" themeColor="textSecondary" style={styles.p}>
+        Tap a stage, then pick an emoji. Your garden grows through these as your bloom climbs.
+      </ThemedText>
+
+      <View style={styles.stageRow}>
+        {STAGE_ORDER.map((stage) => {
+          const on = stage === focused;
+          return (
+            <Pressable
+              key={stage}
+              testID={`stage-${stage}`}
+              onPress={() => setFocused(stage)}
+              accessibilityRole="button"
+              accessibilityState={{ selected: on }}
+              accessibilityLabel={`${STAGE_LABELS[stage]}, current emoji ${customEmoji[stage]}`}
+              style={[styles.stageChip, { borderColor: on ? BLOOM : theme.line, backgroundColor: on ? theme.bloomSoft : 'transparent' }]}
+            >
+              <ThemedText style={styles.stageEmoji}>{customEmoji[stage]}</ThemedText>
+              <ThemedText style={[styles.stageLabel, { color: on ? accent : theme.textSecondary }]} numberOfLines={1}>
+                {STAGE_LABELS[stage]}
+              </ThemedText>
+            </Pressable>
+          );
+        })}
+      </View>
+
+      <View style={styles.palette}>
+        {EMOJI_PALETTE.map((emoji) => (
+          <Pressable
+            key={emoji}
+            testID={`palette-${emoji}`}
+            onPress={() => onPick(focused, emoji)}
+            accessibilityRole="button"
+            accessibilityLabel={`Set ${STAGE_LABELS[focused]} to ${emoji}`}
+            style={({ pressed }) => [styles.paletteCell, { borderColor: theme.line }, pressed && { backgroundColor: theme.bloomSoft }]}
+          >
+            <ThemedText style={styles.paletteEmoji}>{emoji}</ThemedText>
+          </Pressable>
+        ))}
       </View>
     </View>
   );
@@ -285,14 +354,14 @@ const styles = StyleSheet.create({
   body: { paddingHorizontal: Spacing.four, gap: Spacing.three, paddingBottom: Spacing.five },
   p: { lineHeight: 20 },
   appearance: { marginTop: Spacing.four, gap: Spacing.two },
-  skinRow: { flexDirection: 'row', gap: Spacing.two, marginTop: Spacing.one },
+  skinRow: { flexDirection: 'row', flexWrap: 'wrap', gap: Spacing.two, marginTop: Spacing.one },
   skinCard: {
-    flex: 1,
+    width: '48%',
     borderRadius: Radius.md,
     borderWidth: 2,
     padding: Spacing.three,
     gap: 3,
-    minHeight: 118,
+    minHeight: 110,
   },
   skinEmojis: { fontSize: 20, letterSpacing: 1 },
   skinName: { fontFamily: Fonts.display, fontSize: 15, marginTop: Spacing.one },
@@ -309,6 +378,28 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   skinTick: { color: '#fff', fontSize: 12, fontWeight: '800', lineHeight: 14 },
+  editor: { marginTop: Spacing.two, borderRadius: Radius.md, borderWidth: 1.5, padding: Spacing.three, gap: Spacing.two },
+  stageRow: { flexDirection: 'row', flexWrap: 'wrap', gap: Spacing.two, marginTop: Spacing.one },
+  stageChip: {
+    width: '31%',
+    borderRadius: Radius.sm,
+    borderWidth: 1.5,
+    paddingVertical: Spacing.two,
+    alignItems: 'center',
+    gap: 2,
+  },
+  stageEmoji: { fontSize: 26 },
+  stageLabel: { fontFamily: Fonts.bodyBold, fontSize: 10.5 },
+  palette: { flexDirection: 'row', flexWrap: 'wrap', gap: Spacing.two, marginTop: Spacing.two },
+  paletteCell: {
+    width: 40,
+    height: 40,
+    borderRadius: Radius.sm,
+    borderWidth: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  paletteEmoji: { fontSize: 22 },
   form: { gap: Spacing.three, marginTop: Spacing.two },
   input: { borderWidth: 1.5, borderRadius: Radius.md, paddingHorizontal: Spacing.three, paddingVertical: Spacing.three, fontSize: 16, fontFamily: Fonts.body },
   row: { flexDirection: 'row', alignItems: 'center', gap: Spacing.three, padding: Spacing.three, borderRadius: Radius.md },

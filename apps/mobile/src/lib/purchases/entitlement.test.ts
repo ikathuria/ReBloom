@@ -1,4 +1,5 @@
 import {
+  canCustomizeEmojis,
   canEnrollAnother,
   canUseTryOn,
   effectiveCadence,
@@ -30,6 +31,11 @@ describe('cadence + perks', () => {
   it('try-on is Pro-only', () => {
     expect(canUseTryOn('free')).toBe(false);
     expect(canUseTryOn('pro')).toBe(true);
+  });
+
+  it('custom garden emojis are Pro-only', () => {
+    expect(canCustomizeEmojis('free')).toBe(false);
+    expect(canCustomizeEmojis('pro')).toBe(true);
   });
 });
 

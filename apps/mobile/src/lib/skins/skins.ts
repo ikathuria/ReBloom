@@ -8,7 +8,7 @@ import { type BloomHue, hueFor } from '@/constants/theme';
 import type { BloomStage } from '@/lib/tracks/bloomStage';
 import { TRACK_IDS, type TrackId } from '@/lib/tracks';
 
-export type SkinId = 'blooms' | 'grove' | 'harvest';
+export type SkinId = 'blooms' | 'grove' | 'zen' | 'custom';
 export type StageKey = BloomStage['key'];
 
 export interface Skin {
@@ -88,46 +88,81 @@ const GROVE: Skin = {
   ),
 };
 
-// --- Harvest (seed → fruit orchard) — warm, playful, a satisfying "grows into fruit" payoff -------
-const HARVEST: Skin = {
-  id: 'harvest',
-  name: 'Harvest',
-  blurb: 'Sun-ripened orchard',
-  previewEmoji: '🍎',
-  stageEmoji: { seed: '🌰', sprout: '🌱', growing: '🌿', bud: '🌼', bloom: '🍏', full: '🍎' },
+// --- Zen (quiet stone, moss & sand) — a calm, low-saturation minimalist garden --------------------
+const ZEN: Skin = {
+  id: 'zen',
+  name: 'Zen',
+  blurb: 'Quiet stone & moss',
+  previewEmoji: '🎋',
+  stageEmoji: { seed: '🪨', sprout: '🌱', growing: '🌿', bud: '🎋', bloom: '🪴', full: '🌳' },
   trackEmoji: {
-    recovery: '🍏',
-    acne: '🍑',
-    redness: '🍓',
-    hydration: '🫐',
-    'dark-spots': '🍋',
-    'under-eye': '🍇',
-    'hair-regrowth': '🌰',
+    recovery: '🍃',
+    acne: '🌿',
+    redness: '🪷',
+    hydration: '💧',
+    'dark-spots': '🪨',
+    'under-eye': '🌙',
+    'hair-regrowth': '🎋',
   },
+  // Muted, near-monochromatic earth tones — the palette carries the calm, minimal feel.
   hues: hues(
     {
-      recovery: { bg: '#DDECC9', ink: '#4E6B24' },
-      acne: { bg: '#FBD9C0', ink: '#9A4E2A' },
-      redness: { bg: '#F8D3D0', ink: '#A83A3F' },
-      hydration: { bg: '#D9E2F3', ink: '#3A4E86' },
-      'dark-spots': { bg: '#F6ECC0', ink: '#7E6A18' },
-      'under-eye': { bg: '#E6D9F0', ink: '#5B3E7A' },
-      'hair-regrowth': { bg: '#ECE0C6', ink: '#7A5A24' },
+      recovery: { bg: '#DDE4D6', ink: '#4A5B3E' },
+      acne: { bg: '#E9E1D3', ink: '#6E5E45' },
+      redness: { bg: '#E7DEDA', ink: '#7A5952' },
+      hydration: { bg: '#DCE5E6', ink: '#45605F' },
+      'dark-spots': { bg: '#E9E3D6', ink: '#6B5C3E' },
+      'under-eye': { bg: '#DBE0E7', ink: '#46536B' },
+      'hair-regrowth': { bg: '#DEE5DA', ink: '#4C6144' },
     },
     {
-      recovery: { bg: '#2A331C', ink: '#C4D89A' },
-      acne: { bg: '#382619', ink: '#F2B790' },
-      redness: { bg: '#37232A', ink: '#F0AEB2' },
-      hydration: { bg: '#212B3E', ink: '#AEBEE6' },
-      'dark-spots': { bg: '#322E18', ink: '#E7D48C' },
-      'under-eye': { bg: '#2C2338', ink: '#CDB6E6' },
-      'hair-regrowth': { bg: '#322B1C', ink: '#E2CA96' },
+      recovery: { bg: '#232A1E', ink: '#B6C4A6' },
+      acne: { bg: '#2C2820', ink: '#D8C7A9' },
+      redness: { bg: '#2C2523', ink: '#D4B8B0' },
+      hydration: { bg: '#202B2B', ink: '#A9C4C3' },
+      'dark-spots': { bg: '#2B271E', ink: '#D6C6A6' },
+      'under-eye': { bg: '#22262E', ink: '#AAB4C6' },
+      'hair-regrowth': { bg: '#232B20', ink: '#B2C2A6' },
     },
   ),
 };
 
-export const SKINS: Record<SkinId, Skin> = { blooms: BLOOMS, grove: GROVE, harvest: HARVEST };
-export const SKIN_IDS = ['blooms', 'grove', 'harvest'] as const;
+// --- Custom (Pro) — the user picks their own growth emoji per stage ------------------------------
+// The colors + journey emojis inherit from Grove (a calm, neutral base), so a Pro user only
+// personalizes the fun part: the growth-stage emojis. Its `stageEmoji` here are the *starting*
+// defaults; the live values are the user's saved choices, merged in by SkinProvider.
+const CUSTOM: Skin = {
+  ...GROVE,
+  id: 'custom',
+  name: 'Custom',
+  blurb: 'Your own emojis',
+  previewEmoji: '✨',
+  stageEmoji: { ...GROVE.stageEmoji },
+};
+
+/** Order + friendly labels for the six growth stages (used by the Pro emoji editor). */
+export const STAGE_ORDER: StageKey[] = ['seed', 'sprout', 'growing', 'bud', 'bloom', 'full'];
+export const STAGE_LABELS: Record<StageKey, string> = {
+  seed: 'Seed',
+  sprout: 'Sprouting',
+  growing: 'Growing',
+  bud: 'Budding',
+  bloom: 'Blooming',
+  full: 'Full bloom',
+};
+
+/** A generous, varied palette the Pro emoji editor offers for each stage. */
+export const EMOJI_PALETTE: string[] = [
+  '🌱', '🌿', '🍀', '🍃', '🌳', '🌲', '🎋', '🪴', '🌵',
+  '🌸', '🌼', '🌺', '🌷', '🌻', '🪷', '💐',
+  '⭐', '🌙', '✨', '💫', '🔥', '🌈', '☀️', '💧', '❄️',
+  '❤️', '🧡', '💛', '💚', '💙', '💜', '🖤', '🤍',
+  '🍎', '🍓', '🫐', '🍋', '🐢', '🦋', '🐝', '💎', '👑',
+];
+
+export const SKINS: Record<SkinId, Skin> = { blooms: BLOOMS, grove: GROVE, zen: ZEN, custom: CUSTOM };
+export const SKIN_IDS = ['blooms', 'grove', 'zen', 'custom'] as const;
 export const DEFAULT_SKIN: Skin = BLOOMS;
 
 export const isSkinId = (v: string): v is SkinId => (SKIN_IDS as readonly string[]).includes(v);
+

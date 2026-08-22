@@ -27,6 +27,9 @@ export const effectiveCadence = (tier: Tier, trackId: TrackId): Cadence =>
 /** The apparel virtual try-on is a Pro perk. */
 export const canUseTryOn = (tier: Tier): boolean => tier === 'pro';
 
+/** Customizing your garden's growth emojis (the "Custom" skin) is a Pro perk. */
+export const canCustomizeEmojis = (tier: Tier): boolean => tier === 'pro';
+
 const DAY_MS = 86_400_000;
 
 export interface ScanGate {
