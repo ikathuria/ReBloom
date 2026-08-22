@@ -11,7 +11,7 @@ import { useTheme } from '@/hooks/use-theme';
 import { BLOOM } from '@/features/onboarding/copy';
 import { PrimaryButton } from '@/features/onboarding/PrimaryButton';
 import { canCustomizeEmojis, useTier } from '@/lib/purchases';
-import { EMOJI_PALETTE, SKINS, SKIN_IDS, STAGE_LABELS, STAGE_ORDER, useSkin, type StageKey } from '@/lib/skins';
+import { EMOJI_PALETTE, SKINS, SKIN_IDS, STAGE_LABELS, STAGE_ORDER, firstEmoji, useSkin, type StageKey } from '@/lib/skins';
 import {
   buildExport,
   deleteAllData,
@@ -240,12 +240,23 @@ function EmojiEditor({
 }) {
   const theme = useTheme();
   const [focused, setFocused] = useState<StageKey>('bloom');
+  const [draft, setDraft] = useState('');
+
+  const onType = (text: string) => {
+    const emoji = firstEmoji(text);
+    if (emoji) {
+      onPick(focused, emoji);
+      setDraft(''); // applied — clear so the next one can be typed
+    } else {
+      setDraft(text);
+    }
+  };
 
   return (
     <View style={[styles.editor, { backgroundColor: theme.card, borderColor: theme.line }]}>
       <ThemedText type="smallBold">Your growth emojis</ThemedText>
       <ThemedText type="small" themeColor="textSecondary" style={styles.p}>
-        Tap a stage, then pick an emoji. Your garden grows through these as your bloom climbs.
+        Tap a stage, then pick one below — or type any emoji. Your garden grows through these as your bloom climbs.
       </ThemedText>
 
       <View style={styles.stageRow}>
@@ -270,6 +281,27 @@ function EmojiEditor({
         })}
       </View>
 
+      <View style={styles.typeRow}>
+        <TextInput
+          testID="emoji-input"
+          style={[styles.emojiInput, { borderColor: theme.line, color: theme.text }]}
+          value={draft}
+          onChangeText={onType}
+          placeholder="Type any emoji…"
+          placeholderTextColor={theme.textSecondary}
+          autoCapitalize="none"
+          autoCorrect={false}
+          accessibilityLabel={`Type an emoji for ${STAGE_LABELS[focused]}`}
+          returnKeyType="done"
+        />
+        <ThemedText type="small" themeColor="textSecondary" style={styles.typeHint}>
+          → {STAGE_LABELS[focused]}
+        </ThemedText>
+      </View>
+
+      <ThemedText type="small" themeColor="textSecondary" style={styles.orLabel}>
+        or pick one
+      </ThemedText>
       <View style={styles.palette}>
         {EMOJI_PALETTE.map((emoji) => (
           <Pressable
@@ -390,7 +422,18 @@ const styles = StyleSheet.create({
   },
   stageEmoji: { fontSize: 26 },
   stageLabel: { fontFamily: Fonts.bodyBold, fontSize: 10.5 },
-  palette: { flexDirection: 'row', flexWrap: 'wrap', gap: Spacing.two, marginTop: Spacing.two },
+  typeRow: { flexDirection: 'row', alignItems: 'center', gap: Spacing.two, marginTop: Spacing.two },
+  emojiInput: {
+    flex: 1,
+    borderWidth: 1.5,
+    borderRadius: Radius.sm,
+    paddingHorizontal: Spacing.three,
+    paddingVertical: Spacing.two,
+    fontSize: 22,
+  },
+  typeHint: { fontFamily: Fonts.bodyBold },
+  orLabel: { marginTop: Spacing.two, textAlign: 'center' },
+  palette: { flexDirection: 'row', flexWrap: 'wrap', gap: Spacing.two, marginTop: Spacing.one },
   paletteCell: {
     width: 40,
     height: 40,
