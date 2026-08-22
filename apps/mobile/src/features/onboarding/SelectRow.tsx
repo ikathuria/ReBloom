@@ -1,7 +1,7 @@
 import { Pressable, StyleSheet, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
-import { Spacing } from '@/constants/theme';
+import { type BloomHue, Radius, Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 import { BLOOM } from './copy';
 
@@ -11,10 +11,13 @@ export interface SelectRowProps {
   selected: boolean;
   onPress: () => void;
   testID?: string;
+  /** Optional sticker chip (emoji on a pastel hue) shown on the left. */
+  emoji?: string;
+  hue?: BloomHue;
 }
 
-/** A tappable row with a title, optional help line, and a bloom-colored selected indicator. */
-export function SelectRow({ title, help, selected, onPress, testID }: SelectRowProps) {
+/** A tappable rounded row with an optional sticker chip and a bloom-colored selected indicator. */
+export function SelectRow({ title, help, selected, onPress, testID, emoji, hue }: SelectRowProps) {
   const theme = useTheme();
   return (
     <Pressable
@@ -25,9 +28,15 @@ export function SelectRow({ title, help, selected, onPress, testID }: SelectRowP
       accessibilityLabel={title}
       style={[
         styles.row,
-        { backgroundColor: selected ? theme.backgroundSelected : theme.backgroundElement },
+        { backgroundColor: theme.card, borderColor: theme.line },
+        selected && { backgroundColor: theme.bloomSoft, borderColor: BLOOM },
       ]}
     >
+      {emoji ? (
+        <View style={[styles.chip, { backgroundColor: hue?.bg ?? theme.backgroundSelected }]}>
+          <ThemedText style={styles.chipEmoji}>{emoji}</ThemedText>
+        </View>
+      ) : null}
       <View style={styles.text}>
         <ThemedText type="smallBold">{title}</ThemedText>
         {help ? (
@@ -39,7 +48,7 @@ export function SelectRow({ title, help, selected, onPress, testID }: SelectRowP
       <View
         style={[
           styles.indicator,
-          { borderColor: selected ? BLOOM : theme.textSecondary },
+          { borderColor: selected ? BLOOM : theme.line },
           selected && { backgroundColor: BLOOM },
         ]}
       >
@@ -55,8 +64,17 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: Spacing.three,
     padding: Spacing.three,
-    borderRadius: Spacing.three,
+    borderRadius: Radius.md,
+    borderWidth: 1.5,
   },
+  chip: {
+    width: 44,
+    height: 44,
+    borderRadius: Radius.sm,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  chipEmoji: { fontSize: 22 },
   text: { flex: 1, gap: 2 },
   help: { lineHeight: 18 },
   indicator: {

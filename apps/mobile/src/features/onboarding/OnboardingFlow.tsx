@@ -4,10 +4,13 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
-import { Spacing } from '@/constants/theme';
+import { Radius, Spacing } from '@/constants/theme';
+import { useColorScheme } from '@/hooks/use-color-scheme';
+import { useTheme } from '@/hooks/use-theme';
 import { type ConsentState, initialConsent, markDecided, setConsent } from '@/features/privacy/consent';
+import { useSkin } from '@/lib/skins';
 import { TRACKS_META, TRACK_IDS, type TrackId } from '@/lib/tracks';
-import { onboardingCopy as C } from './copy';
+import { BLOOM, onboardingCopy as C } from './copy';
 import { PrimaryButton } from './PrimaryButton';
 import { SelectRow } from './SelectRow';
 
@@ -17,6 +20,7 @@ export interface OnboardingResult {
 }
 
 type Step = 'welcome' | 'consent' | 'tracks';
+const STEP_INDEX: Record<Step, number> = { welcome: 0, consent: 1, tracks: 2 };
 
 export interface OnboardingFlowProps {
   onComplete: (result: OnboardingResult) => void;
@@ -30,6 +34,8 @@ export interface OnboardingFlowProps {
 
 /** Three-step first-run flow: welcome → consent → choose journeys. Pure UI; persistence is the caller's job. */
 export function OnboardingFlow({ onComplete, maxTracks = Infinity }: OnboardingFlowProps) {
+  const scheme = useColorScheme();
+  const { skin } = useSkin();
   const [step, setStep] = useState<Step>('welcome');
   const [consent, setConsentState] = useState<ConsentState>(initialConsent);
   const [selected, setSelected] = useState<Set<TrackId>>(new Set());
@@ -53,11 +59,10 @@ export function OnboardingFlow({ onComplete, maxTracks = Infinity }: OnboardingF
       <SafeAreaView style={styles.fill} edges={['top', 'bottom']}>
         {step === 'welcome' && (
           <Panel
+            step={STEP_INDEX.welcome}
             title={C.welcome.title}
             body={C.welcome.body}
-            footer={
-              <PrimaryButton testID="welcome-start" label={C.welcome.cta} onPress={() => setStep('consent')} />
-            }
+            footer={<PrimaryButton testID="welcome-start" label={C.welcome.cta} onPress={() => setStep('consent')} />}
           >
             <ThemedText style={styles.bloomMark}>🌱</ThemedText>
           </Panel>
@@ -65,6 +70,7 @@ export function OnboardingFlow({ onComplete, maxTracks = Infinity }: OnboardingF
 
         {step === 'consent' && (
           <Panel
+            step={STEP_INDEX.consent}
             title={C.consent.title}
             body={C.consent.body}
             footer={
@@ -102,6 +108,7 @@ export function OnboardingFlow({ onComplete, maxTracks = Infinity }: OnboardingF
 
         {step === 'tracks' && (
           <Panel
+            step={STEP_INDEX.tracks}
             title={C.tracks.title}
             body={C.tracks.body}
             footer={
@@ -128,6 +135,8 @@ export function OnboardingFlow({ onComplete, maxTracks = Infinity }: OnboardingF
                   testID={`track-${id}`}
                   title={meta.sensitive ? `${meta.name}  ·  private` : meta.name}
                   help={meta.blurb}
+                  emoji={skin.trackEmoji[id]}
+                  hue={skin.hues[scheme === 'dark' ? 'dark' : 'light'][id]}
                   selected={selected.has(id)}
                   onPress={() => toggleTrack(id)}
                 />
@@ -140,12 +149,32 @@ export function OnboardingFlow({ onComplete, maxTracks = Infinity }: OnboardingF
   );
 }
 
+function Dots({ step }: { step: number }) {
+  const theme = useTheme();
+  return (
+    <View style={styles.dots} accessible accessibilityLabel={`Step ${step + 1} of 3`}>
+      {[0, 1, 2].map((i) => (
+        <View
+          key={i}
+          style={[
+            styles.dot,
+            { backgroundColor: i === step ? BLOOM : theme.line },
+            i === step && styles.dotOn,
+          ]}
+        />
+      ))}
+    </View>
+  );
+}
+
 function Panel({
+  step,
   title,
   body,
   children,
   footer,
 }: {
+  step: number;
   title: string;
   body: string;
   children?: React.ReactNode;
@@ -154,6 +183,7 @@ function Panel({
   return (
     <View style={styles.panel}>
       <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
+        <Dots step={step} />
         <ThemedText type="title">{title}</ThemedText>
         <ThemedText type="default" themeColor="textSecondary" style={styles.body}>
           {body}
@@ -168,10 +198,13 @@ function Panel({
 const styles = StyleSheet.create({
   fill: { flex: 1 },
   panel: { flex: 1, paddingHorizontal: Spacing.four },
-  scroll: { paddingTop: Spacing.five, gap: Spacing.three, paddingBottom: Spacing.four },
+  scroll: { paddingTop: Spacing.four, gap: Spacing.three, paddingBottom: Spacing.four },
   body: { lineHeight: 22 },
   rows: { gap: Spacing.two, marginTop: Spacing.two },
   footer: { gap: Spacing.two, paddingVertical: Spacing.three },
   footerNote: { lineHeight: 18 },
-  bloomMark: { fontSize: 64, textAlign: 'center', marginTop: Spacing.four },
+  bloomMark: { fontSize: 72, textAlign: 'center', marginTop: Spacing.four },
+  dots: { flexDirection: 'row', gap: 6, marginBottom: Spacing.one },
+  dot: { width: 8, height: 8, borderRadius: Radius.pill },
+  dotOn: { width: 24 },
 });

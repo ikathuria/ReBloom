@@ -6,7 +6,8 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
-import { Spacing } from '@/constants/theme';
+import { Fonts, Radius, Spacing } from '@/constants/theme';
+import { useColorScheme } from '@/hooks/use-color-scheme';
 import { useTheme } from '@/hooks/use-theme';
 import { PrimaryButton } from '@/features/onboarding/PrimaryButton';
 import { BLOOM } from '@/features/onboarding/copy';
@@ -15,6 +16,7 @@ import { canScan, scanBlockReason } from '@/features/privacy/consent';
 import { HAIR_TREND, NOT_MEDICAL, PHOTO_PROMISE } from '@/features/privacy/disclaimer';
 import { getHairAnalyzer } from '@/lib/analysis';
 import { getDb } from '@/lib/db';
+import { useSkin } from '@/lib/skins';
 import { captureError } from '@/lib/telemetry';
 import { scanGate, useTier, type ScanGate } from '@/lib/purchases';
 import { runHairScan, type HairScanResult } from './runHairScan';
@@ -25,6 +27,8 @@ type State = 'checking' | 'blocked' | 'capped' | 'idle' | 'analyzing' | 'done' |
 
 export default function ScanHairScreen() {
   const { tier } = useTier();
+  const { skin } = useSkin();
+  const scheme = useColorScheme();
   const [state, setState] = useState<State>('checking');
   const [blockReason, setBlockReason] = useState<string | null>(null);
   const [gate, setGate] = useState<ScanGate | null>(null);
@@ -130,11 +134,16 @@ export default function ScanHairScreen() {
           {state === 'done' && result && (
             <>
               <View style={styles.header}>
-                <ThemedText style={styles.emoji}>🌸</ThemedText>
+                <ThemedText style={styles.emoji}>{skin.stageEmoji.bloom}</ThemedText>
                 <ThemedText type="title">Your hair bloom</ThemedText>
               </View>
               <View style={styles.centered}>
-                <BloomVisual bloom={result.bloom} hero name="Hair Regrowth" />
+                <BloomVisual
+                  bloom={result.bloom}
+                  hero
+                  name="Hair Regrowth"
+                  hue={skin.hues[scheme === 'dark' ? 'dark' : 'light'][HAIR_TRACK]}
+                />
                 <ThemedText type="default" themeColor="textSecondary" style={styles.center}>
                   Gentle and slow is the goal. See you next month.
                 </ThemedText>
@@ -182,6 +191,6 @@ const styles = StyleSheet.create({
   centered: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: Spacing.three, padding: Spacing.four },
   center: { textAlign: 'center' },
   emoji: { fontSize: 64, textAlign: 'center' },
-  secondary: { paddingVertical: Spacing.three, paddingHorizontal: Spacing.four, borderRadius: Spacing.four, borderWidth: 2, alignItems: 'center' },
-  secondaryLabel: { fontSize: 16, fontWeight: '700' },
+  secondary: { paddingVertical: Spacing.three, paddingHorizontal: Spacing.four, borderRadius: Radius.pill, borderWidth: 2, alignItems: 'center' },
+  secondaryLabel: { fontFamily: Fonts.display, fontSize: 16 },
 });

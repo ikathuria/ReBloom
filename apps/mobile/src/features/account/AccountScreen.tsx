@@ -1,14 +1,16 @@
 import { router } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { Alert, Pressable, Share, StyleSheet, Switch, TextInput, View } from 'react-native';
+import { Alert, Pressable, ScrollView, Share, StyleSheet, Switch, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
-import { Spacing } from '@/constants/theme';
+import { Fonts, Radius, Spacing } from '@/constants/theme';
+import { useColorScheme } from '@/hooks/use-color-scheme';
 import { useTheme } from '@/hooks/use-theme';
 import { BLOOM } from '@/features/onboarding/copy';
 import { PrimaryButton } from '@/features/onboarding/PrimaryButton';
+import { SKINS, SKIN_IDS, useSkin } from '@/lib/skins';
 import {
   buildExport,
   deleteAllData,
@@ -38,7 +40,7 @@ export default function AccountScreen() {
         <Pressable testID="account-back" onPress={() => router.back()} style={styles.back} accessibilityRole="button">
           <ThemedText style={[styles.backText, { color: BLOOM }]}>‹ Garden</ThemedText>
         </Pressable>
-        <View style={styles.body}>
+        <ScrollView contentContainerStyle={styles.body} showsVerticalScrollIndicator={false}>
           <ThemedText type="title">Account & sync</ThemedText>
 
           {!auth.configured ? (
@@ -51,8 +53,10 @@ export default function AccountScreen() {
             <SignedOut />
           )}
 
+          <Appearance />
+
           <DataRights signedIn={Boolean(auth.session)} />
-        </View>
+        </ScrollView>
       </SafeAreaView>
     </ThemedView>
   );
@@ -164,6 +168,57 @@ function SignedIn({ email }: { email: string | null }) {
   );
 }
 
+function Appearance() {
+  const theme = useTheme();
+  const scheme = useColorScheme();
+  const dark = scheme === 'dark';
+  const { skinId, setSkin } = useSkin();
+
+  return (
+    <View style={styles.appearance}>
+      <ThemedText type="smallBold">Garden style</ThemedText>
+      <ThemedText type="small" themeColor="textSecondary" style={styles.p}>
+        Pick the look that feels like yours. It changes how your garden looks — nothing else.
+      </ThemedText>
+      <View style={styles.skinRow}>
+        {SKIN_IDS.map((id) => {
+          const s = SKINS[id];
+          const selected = id === skinId;
+          // A tiny growth preview in this skin's own colors, so the card sells the vibe.
+          const preview = s.hues[dark ? 'dark' : 'light'].recovery;
+          return (
+            <Pressable
+              key={id}
+              testID={`skin-${id}`}
+              onPress={() => setSkin(id)}
+              accessibilityRole="radio"
+              accessibilityState={{ selected }}
+              accessibilityLabel={`${s.name} garden style`}
+              style={[
+                styles.skinCard,
+                { backgroundColor: preview.bg, borderColor: selected ? BLOOM : 'transparent' },
+              ]}
+            >
+              <ThemedText style={styles.skinEmojis}>
+                {s.stageEmoji.sprout}
+                {s.stageEmoji.bloom}
+                {s.stageEmoji.full}
+              </ThemedText>
+              <ThemedText style={[styles.skinName, { color: preview.ink }]}>{s.name}</ThemedText>
+              <ThemedText style={[styles.skinBlurb, { color: preview.ink }]} numberOfLines={2}>
+                {s.blurb}
+              </ThemedText>
+              <View style={[styles.skinCheck, { borderColor: selected ? BLOOM : theme.line }, selected && { backgroundColor: BLOOM }]}>
+                {selected ? <ThemedText style={styles.skinTick}>✓</ThemedText> : null}
+              </View>
+            </Pressable>
+          );
+        })}
+      </View>
+    </View>
+  );
+}
+
 function DataRights({ signedIn }: { signedIn: boolean }) {
   const theme = useTheme();
   const [busy, setBusy] = useState(false);
@@ -226,16 +281,41 @@ function DataRights({ signedIn }: { signedIn: boolean }) {
 const styles = StyleSheet.create({
   fill: { flex: 1 },
   back: { paddingHorizontal: Spacing.four, paddingVertical: Spacing.two },
-  backText: { fontSize: 16, fontWeight: '700' },
-  body: { flex: 1, paddingHorizontal: Spacing.four, gap: Spacing.three },
+  backText: { fontFamily: Fonts.display, fontSize: 16 },
+  body: { paddingHorizontal: Spacing.four, gap: Spacing.three, paddingBottom: Spacing.five },
   p: { lineHeight: 20 },
+  appearance: { marginTop: Spacing.four, gap: Spacing.two },
+  skinRow: { flexDirection: 'row', gap: Spacing.two, marginTop: Spacing.one },
+  skinCard: {
+    flex: 1,
+    borderRadius: Radius.md,
+    borderWidth: 2,
+    padding: Spacing.three,
+    gap: 3,
+    minHeight: 118,
+  },
+  skinEmojis: { fontSize: 20, letterSpacing: 1 },
+  skinName: { fontFamily: Fonts.display, fontSize: 15, marginTop: Spacing.one },
+  skinBlurb: { fontFamily: Fonts.bodyBold, fontSize: 11, opacity: 0.75, lineHeight: 15 },
+  skinCheck: {
+    position: 'absolute',
+    top: Spacing.two,
+    right: Spacing.two,
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    borderWidth: 2,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  skinTick: { color: '#fff', fontSize: 12, fontWeight: '800', lineHeight: 14 },
   form: { gap: Spacing.three, marginTop: Spacing.two },
-  input: { borderWidth: 2, borderRadius: Spacing.three, paddingHorizontal: Spacing.three, paddingVertical: Spacing.three, fontSize: 16 },
-  row: { flexDirection: 'row', alignItems: 'center', gap: Spacing.three, padding: Spacing.three, borderRadius: Spacing.three },
+  input: { borderWidth: 1.5, borderRadius: Radius.md, paddingHorizontal: Spacing.three, paddingVertical: Spacing.three, fontSize: 16, fontFamily: Fonts.body },
+  row: { flexDirection: 'row', alignItems: 'center', gap: Spacing.three, padding: Spacing.three, borderRadius: Radius.md },
   rowText: { flex: 1, gap: 2 },
   linkBtn: { alignSelf: 'flex-start', paddingVertical: Spacing.two },
-  linkText: { fontSize: 16, fontWeight: '700' },
+  linkText: { fontFamily: Fonts.display, fontSize: 16 },
   dataRights: { marginTop: Spacing.five, gap: Spacing.two },
   deleteBtn: { alignSelf: 'center', paddingVertical: Spacing.two },
-  deleteText: { fontSize: 15, fontWeight: '700', opacity: 0.7 },
+  deleteText: { fontFamily: Fonts.display, fontSize: 15, opacity: 0.7 },
 });

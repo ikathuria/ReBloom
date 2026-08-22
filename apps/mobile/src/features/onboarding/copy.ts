@@ -31,5 +31,7 @@ export const onboardingCopy = {
   },
 } as const;
 
-/** ReBloom accent — a hopeful bloom green (the template palette is otherwise neutral). */
+/** ReBloom accent — a hopeful bloom green. Mirrors `Colors.light.bloom` for non-themed accents. */
 export const BLOOM = '#2FA36B';
+/** Deeper green that reads on the warm paper ground (shadows, emphasis). */
+export const BLOOM_DEEP = '#1E7A4E';

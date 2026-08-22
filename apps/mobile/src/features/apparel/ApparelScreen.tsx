@@ -4,7 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
-import { BottomTabInset, Spacing } from '@/constants/theme';
+import { BottomTabInset, Radius, Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 import { BLOOM } from '@/features/onboarding/copy';
 import { PrimaryButton } from '@/features/onboarding/PrimaryButton';
@@ -113,13 +113,13 @@ const styles = StyleSheet.create({
   fill: { flex: 1 },
   scroll: { paddingHorizontal: Spacing.four, paddingTop: Spacing.three, gap: Spacing.two, paddingBottom: BottomTabInset + Spacing.five },
   subtitle: { lineHeight: 22, marginBottom: Spacing.two },
-  badge: { padding: Spacing.three, borderRadius: Spacing.three, gap: 2, marginBottom: Spacing.two },
+  badge: { padding: Spacing.three, borderRadius: Radius.md, gap: 2, marginBottom: Spacing.two },
   note: { lineHeight: 18 },
   section: { marginTop: Spacing.three, marginBottom: Spacing.one },
-  tip: { flexDirection: 'row', alignItems: 'center', gap: Spacing.three, padding: Spacing.three, borderRadius: Spacing.three },
+  tip: { flexDirection: 'row', alignItems: 'center', gap: Spacing.three, padding: Spacing.three, borderRadius: Radius.md },
   dot: { width: 10, height: 10, borderRadius: 5 },
   tipText: { flex: 1, gap: 2 },
-  tryon: { marginTop: Spacing.four, padding: Spacing.three, borderRadius: Spacing.three, borderWidth: 2, gap: 2 },
+  tryon: { marginTop: Spacing.four, padding: Spacing.three, borderRadius: Radius.md, borderWidth: 2, gap: 2 },
   tryonCta: { marginTop: Spacing.two },
   disclaimer: { marginTop: Spacing.three, lineHeight: 18 },
   empty: { alignItems: 'center', gap: Spacing.three, paddingTop: Spacing.six },

@@ -5,7 +5,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
-import { Spacing } from '@/constants/theme';
+import { Fonts, Radius, Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 import { BLOOM } from '@/features/onboarding/copy';
 import { PrimaryButton } from '@/features/onboarding/PrimaryButton';
@@ -134,13 +134,13 @@ const styles = StyleSheet.create({
   center: { textAlign: 'center' },
   subtitle: { lineHeight: 22, marginBottom: Spacing.three },
   benefits: { gap: Spacing.two, marginBottom: Spacing.three },
-  benefit: { flexDirection: 'row', alignItems: 'center', gap: Spacing.three, padding: Spacing.three, borderRadius: Spacing.three },
+  benefit: { flexDirection: 'row', alignItems: 'center', gap: Spacing.three, padding: Spacing.three, borderRadius: Radius.md },
   benefitEmoji: { fontSize: 28 },
   benefitText: { flex: 1, gap: 2 },
   benefitBody: { lineHeight: 18 },
   loading: { paddingVertical: Spacing.four },
   plans: { gap: Spacing.two },
   link: { alignSelf: 'center', paddingVertical: Spacing.two },
-  linkText: { fontSize: 15, fontWeight: '700' },
+  linkText: { fontFamily: Fonts.display, fontSize: 15 },
   fine: { lineHeight: 18, marginTop: Spacing.two },
 });

@@ -5,16 +5,20 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
-import { Spacing } from '@/constants/theme';
+import { Fonts, Radius, Spacing } from '@/constants/theme';
+import { useColorScheme } from '@/hooks/use-color-scheme';
 import { useTheme } from '@/hooks/use-theme';
 import { BLOOM } from '@/features/onboarding/copy';
 import { SelectRow } from '@/features/onboarding/SelectRow';
+import { useSkin } from '@/lib/skins';
 import { getDb } from '@/lib/db';
 import { canEnrollAnother, useTier } from '@/lib/purchases';
 import { TRACKS_META, TRACK_IDS, defaultCadence, type TrackId } from '@/lib/tracks';
 
 export default function AddJourneyScreen() {
   const theme = useTheme();
+  const scheme = useColorScheme();
+  const { skin } = useSkin();
   const { tier } = useTier();
   const [enrolled, setEnrolled] = useState<Set<TrackId>>(new Set());
 
@@ -77,7 +81,9 @@ export default function AddJourneyScreen() {
                   key={id}
                   testID={`add-${id}`}
                   title={meta.sensitive ? `${meta.name}  ·  private` : meta.name}
-                  help={isEnrolled ? 'Already in your garden' : showLock ? 'ReBloom Pro' : meta.blurb}
+                  help={isEnrolled ? 'Already in your garden' : showLock ? '🔒 ReBloom Pro' : meta.blurb}
+                  emoji={skin.trackEmoji[id]}
+                  hue={skin.hues[scheme === 'dark' ? 'dark' : 'light'][id]}
                   selected={isEnrolled}
                   onPress={() => !isEnrolled && add(id)}
                 />
@@ -93,10 +99,10 @@ export default function AddJourneyScreen() {
 const styles = StyleSheet.create({
   fill: { flex: 1 },
   back: { paddingHorizontal: Spacing.four, paddingVertical: Spacing.two },
-  backText: { fontSize: 16, fontWeight: '700' },
+  backText: { fontFamily: Fonts.display, fontSize: 16 },
   scroll: { paddingHorizontal: Spacing.four, paddingBottom: Spacing.five, gap: Spacing.three },
   subtitle: { lineHeight: 22 },
-  banner: { padding: Spacing.three, borderRadius: Spacing.three, gap: 2 },
+  banner: { padding: Spacing.three, borderRadius: Radius.md, gap: 2 },
   bannerBody: { lineHeight: 18 },
   rows: { gap: Spacing.two },
 });
