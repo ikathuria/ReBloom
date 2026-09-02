@@ -11,6 +11,10 @@ export default function AppTabs() {
     <NativeTabs
       backgroundColor={colors.background}
       indicatorColor={colors.bloomSoft}
+      // Selected icon + tab tint. Without this, iOS tints the active icon with
+      // the system-blue default, clashing with the brand green (the label is
+      // already green via labelStyle.selected below).
+      tintColor={colors.bloomDeep}
       labelStyle={{ selected: { color: colors.bloomDeep } }}>
       <NativeTabs.Trigger name="index">
         <NativeTabs.Trigger.Label>Garden</NativeTabs.Trigger.Label>
