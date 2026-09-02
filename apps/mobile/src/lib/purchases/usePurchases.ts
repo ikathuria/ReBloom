@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 
-import { getPurchases } from './index';
+import { getPurchases } from './provider';
 import type { Tier } from './types';
 
 /**
