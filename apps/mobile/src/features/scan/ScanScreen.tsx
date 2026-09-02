@@ -220,7 +220,7 @@ const styles = StyleSheet.create({
   results: { flex: 1, justifyContent: 'center', gap: Spacing.two },
   centered: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: Spacing.three, padding: Spacing.four },
   center: { textAlign: 'center' },
-  emoji: { fontSize: 64, textAlign: 'center' },
+  emoji: { fontSize: 64, lineHeight: 76, textAlign: 'center' },
   bloomRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', padding: Spacing.three, borderRadius: Radius.md },
   bloomName: { flex: 1 },
   bloomValue: { fontFamily: Fonts.displayBold, fontSize: 28 },

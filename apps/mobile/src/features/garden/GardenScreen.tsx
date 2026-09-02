@@ -211,8 +211,8 @@ const styles = StyleSheet.create({
     paddingVertical: 2,
   },
   scoreText: { fontFamily: Fonts.display, fontSize: 15 },
-  cardEmoji: { fontSize: 36, marginBottom: Spacing.two },
-  cardEmojiTall: { fontSize: 52, marginTop: Spacing.two },
+  cardEmoji: { fontSize: 36, lineHeight: 44, marginBottom: Spacing.two },
+  cardEmojiTall: { fontSize: 52, lineHeight: 62, marginTop: Spacing.two },
   cardName: { fontFamily: Fonts.display, fontSize: 16, lineHeight: 20 },
   cardMeta: { fontFamily: Fonts.bodyBold, fontSize: 11.5, opacity: 0.72, marginTop: 2, letterSpacing: 0.2 },
   prog: { height: 7, borderRadius: Radius.pill, backgroundColor: 'rgba(255,255,255,0.55)', overflow: 'hidden', marginTop: Spacing.three },
@@ -233,5 +233,5 @@ const styles = StyleSheet.create({
   center: { alignItems: 'center', paddingVertical: Spacing.six },
   centerText: { textAlign: 'center' },
   emptyState: { alignItems: 'center', gap: Spacing.two, paddingTop: Spacing.six, paddingBottom: Spacing.four },
-  emptyEmoji: { fontSize: 56 },
+  emptyEmoji: { fontSize: 56, lineHeight: 66 },
 });

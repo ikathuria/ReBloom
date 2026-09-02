@@ -123,7 +123,7 @@ const styles = StyleSheet.create({
   tryonCta: { marginTop: Spacing.two },
   disclaimer: { marginTop: Spacing.three, lineHeight: 18 },
   empty: { alignItems: 'center', gap: Spacing.three, paddingTop: Spacing.six },
-  emoji: { fontSize: 56 },
+  emoji: { fontSize: 56, lineHeight: 66 },
   center: { textAlign: 'center' },
   loading: { alignItems: 'center', paddingVertical: Spacing.six },
 });

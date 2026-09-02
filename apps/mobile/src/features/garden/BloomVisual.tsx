@@ -58,8 +58,8 @@ export function BloomVisual({
 const styles = StyleSheet.create({
   wrap: { alignItems: 'center', gap: Spacing.one },
   wrapHero: { gap: Spacing.two },
-  emoji: { fontSize: 40 },
-  emojiHero: { fontSize: 92 },
+  emoji: { fontSize: 40, lineHeight: 48 },
+  emojiHero: { fontSize: 92, lineHeight: 108 },
   meta: { alignItems: 'center', gap: 2 },
   score: { fontFamily: Fonts.display, fontSize: 15 },
   scoreHero: { fontFamily: Fonts.displayBold, fontSize: 48, lineHeight: 52 },

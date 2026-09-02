@@ -190,7 +190,7 @@ const styles = StyleSheet.create({
   actions: { gap: Spacing.two, paddingVertical: Spacing.three },
   centered: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: Spacing.three, padding: Spacing.four },
   center: { textAlign: 'center' },
-  emoji: { fontSize: 64, textAlign: 'center' },
+  emoji: { fontSize: 64, lineHeight: 76, textAlign: 'center' },
   secondary: { paddingVertical: Spacing.three, paddingHorizontal: Spacing.four, borderRadius: Radius.pill, borderWidth: 2, alignItems: 'center' },
   secondaryLabel: { fontFamily: Fonts.display, fontSize: 16 },
 });

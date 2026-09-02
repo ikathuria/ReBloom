@@ -203,7 +203,7 @@ const styles = StyleSheet.create({
   rows: { gap: Spacing.two, marginTop: Spacing.two },
   footer: { gap: Spacing.two, paddingVertical: Spacing.three },
   footerNote: { lineHeight: 18 },
-  bloomMark: { fontSize: 72, textAlign: 'center', marginTop: Spacing.four },
+  bloomMark: { fontSize: 72, lineHeight: 84, textAlign: 'center', marginTop: Spacing.four },
   dots: { flexDirection: 'row', gap: 6, marginBottom: Spacing.one },
   dot: { width: 8, height: 8, borderRadius: Radius.pill },
   dotOn: { width: 24 },
