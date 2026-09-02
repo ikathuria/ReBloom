@@ -26,9 +26,47 @@ function mapPoint(r: Row): TrackPoint {
   };
 }
 
+/**
+ * Open the encrypted store, forcing SQLCipher to actually decrypt the file so a
+ * wrong-key / stale / corrupt database fails *here* rather than on some later
+ * query. If the existing file can't be opened, its contents are unrecoverable —
+ * we don't hold a key that decrypts them — so we recreate a fresh *encrypted*
+ * store. That's far safer than the old behaviour, where an open failure bubbled
+ * up and the caller silently fell back to an unencrypted in-memory store,
+ * dropping both persistence and at-rest encryption without telling the user
+ * (e.g. a returning user whose Keychain key was lost on an OS restore would
+ * lose their whole garden and unknowingly run unencrypted).
+ *
+ * Note: only a *decryption/open* failure triggers the recreate. Migrations run
+ * afterwards in `createOpSqliteDb`, so a migration bug can never delete a
+ * perfectly readable database.
+ */
+async function openEncryptedStore(encryptionKey: string) {
+  let db = open({ name: DB_NAME, encryptionKey });
+  try {
+    // Touches the database header — throws on a key mismatch or corruption.
+    await db.execute('SELECT count(*) FROM sqlite_master');
+    return db;
+  } catch (openErr) {
+    console.warn(
+      '[db] existing encrypted store could not be opened (stale key or corruption); ' +
+        'recreating a fresh encrypted store. Previous local data was unreadable.',
+      openErr,
+    );
+    try {
+      db.delete();
+    } catch {
+      // Best-effort delete; the recreate below still tries, and a persistent
+      // failure surfaces to the caller instead of silently losing encryption.
+    }
+    db = open({ name: DB_NAME, encryptionKey });
+    return db;
+  }
+}
+
 export async function createOpSqliteDb(): Promise<ReBloomDb> {
   const encryptionKey = await getOrCreateDbKey();
-  const db = open({ name: DB_NAME, encryptionKey });
+  const db = await openEncryptedStore(encryptionKey);
 
   for (const stmt of MIGRATIONS) {
     await db.execute(stmt);

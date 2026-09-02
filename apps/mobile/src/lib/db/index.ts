@@ -25,9 +25,17 @@ export async function createDb(): Promise<ReBloomDb> {
   if (inJest || Platform.OS === 'web') return createInMemoryDb();
   try {
     const { createOpSqliteDb } = await import('./opsqlite');
+    // createOpSqliteDb self-heals a stale/corrupt encrypted file (recreating a
+    // fresh encrypted store), so reaching the catch below means op-sqlite itself
+    // is unavailable — expected in Expo Go, a real problem in a dev/prod build.
     return await createOpSqliteDb();
   } catch (e) {
-    console.warn('[db] encrypted store unavailable — using in-memory (Expo Go?).', e);
+    console.warn(
+      '[db] op-sqlite unavailable — falling back to a non-persistent, unencrypted ' +
+        'in-memory store. Expected in Expo Go; on a native build this means DATA ' +
+        'WILL NOT PERSIST and is NOT encrypted at rest.',
+      e,
+    );
     return createInMemoryDb();
   }
 }
